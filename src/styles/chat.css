@@ -1,0 +1,167 @@
+/* Ecrã do chat: barra superior, conversa com scroll e caixa de escrita fixa em baixo. */
+
+body {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.app-bar__texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.conversa {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.coluna {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding-inline: 16px;
+}
+
+/* ---------- Boas-vindas ---------- */
+
+.boas-vindas {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 40px 0 24px;
+  text-align: center;
+}
+
+.boas-vindas p {
+  max-width: 40ch;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.boas-vindas .sugestoes {
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.avatar--grande {
+  width: 72px;
+  height: 72px;
+  --md-icon-size: 40px;
+}
+
+.avatar--pequeno {
+  width: 32px;
+  height: 32px;
+  --md-icon-size: 20px;
+}
+
+/* ---------- Mensagens ---------- */
+
+.mensagens {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 24px;
+}
+
+.mensagem {
+  display: flex;
+  gap: 8px;
+  animation: entrar var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+.mensagem--aluno {
+  justify-content: flex-end;
+}
+
+.mensagem--newton {
+  align-items: flex-start;
+}
+
+.mensagem__corpo {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  min-width: 0;
+  max-width: min(85%, 36rem);
+}
+
+.mensagem__corpo .bubble {
+  max-width: 100%;
+}
+
+.mensagem--aluno .bubble {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Texto das respostas do Newton */
+.bubble--newton p + p,
+.bubble--newton p + ul,
+.bubble--newton ul + p,
+.bubble--newton ul + ul {
+  margin-top: 12px;
+}
+
+.bubble--newton ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.bubble--newton li + li {
+  margin-top: 6px;
+}
+
+.bubble--newton strong {
+  font-weight: 500;
+  color: var(--md-sys-color-primary);
+}
+
+.a-escrever {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+  --md-circular-progress-size: 24px;
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* ---------- Caixa de escrita ---------- */
+
+.compositor {
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  background: var(--md-sys-color-surface);
+}
+
+.compositor__form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compositor__form .composer-field {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Botão de enviar com o alvo de toque de 48 px */
+#enviar {
+  --md-filled-icon-button-container-width: 48px;
+  --md-filled-icon-button-container-height: 48px;
+}
+
+.compositor__nota {
+  max-width: 720px;
+  margin: 6px auto 0;
+  padding-inline: 16px;
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant);
+}

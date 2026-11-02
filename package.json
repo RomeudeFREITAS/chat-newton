@@ -1,0 +1,19 @@
+{
+  "name": "chat-newton",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Newton: chatbot de apoio ao estudo de Físico-Química para alunos do 2.º e 3.º ciclo.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@material/web": "^2.5.0"
+  },
+  "devDependencies": {
+    "@material/material-color-utilities": "^0.3.0",
+    "vite": "^8.3.5"
+  }
+}

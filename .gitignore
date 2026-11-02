@@ -1,0 +1,30 @@
+# Dependências e build (o GitHub Pages recebe a build feita no GitHub)
+node_modules/
+dist/
+
+# Sistema e editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Variáveis de ambiente
+.env
+.env.*
+
+# Ferramentas locais
+.playwright-mcp/
+
+# Documentação e memória do projeto (só neste computador); o README é público
+*.md
+!README.md
+docs/
+
+# Guia de estilo (ferramenta de design, não faz parte da app)
+guia-de-estilo.html
+src/guia.js
+src/styles/guia.css
+
+# Gerador de cores (o resultado, src/styles/tema-cores.css, é público)
+scripts/
