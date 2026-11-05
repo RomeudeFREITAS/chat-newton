@@ -1,6 +1,6 @@
 # Newton
 
-Chatbot que ajuda alunos do 2.º e 3.º ciclo (5.º ao 9.º ano) a tirar dúvidas de Físico-Química.
+O Newton é um colega de estudo para Físico-Química. Pensado para alunos do 3.º ciclo (7.º ao 9.º ano) e, numa fase seguinte, do ensino secundário.
 
 **Experimentar:** https://romeudefreitas.github.io/chat-newton/
 
@@ -10,7 +10,7 @@ Chatbot que ajuda alunos do 2.º e 3.º ciclo (5.º ao 9.º ano) a tirar dúvida
 - Sugere temas para começar e, depois de cada resposta, temas relacionados.
 - Funciona no computador e no telemóvel, com tema claro e escuro automáticos.
 
-Nesta primeira fase o Newton usa respostas pré-definidas e ainda não está ligado a nenhuma inteligência artificial.
+Nesta primeira fase o Newton usa respostas preparadas à mão e ainda não está ligado a nenhuma inteligência artificial. Quando estiver, vai dizê-lo claramente.
 
 ## Design
 
