@@ -24,8 +24,7 @@ dd {
 }
 
 :root {
-  /* Ícones: Material Symbols, variante arredondada (mais amigável para alunos novos) */
-  --md-icon-font: "Material Symbols Rounded";
+  /* Ícones: Material Symbols Rounded em SVG, servidos pelo próprio site (src/icones.js) */
 }
 
 /* Barra superior (small app bar do M3, construída com tokens) */
@@ -101,4 +100,11 @@ dd {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Os ícones SVG ocupam o tamanho do md-icon e usam a cor do texto */
+md-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
 }

@@ -6,17 +6,11 @@
     <meta name="description" content="Newton, o teu ajudante para estudar Físico-Química." />
     <title>Newton</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block"
-    />
     <script type="module" src="/src/main.js"></script>
   </head>
   <body>
     <header class="app-bar" id="app-bar">
-      <span class="avatar" aria-hidden="true"><md-icon>science</md-icon></span>
+      <span class="avatar" aria-hidden="true"><md-icon data-icone="science"></md-icon></span>
       <div class="app-bar__texto">
         <h1 class="md-typescale-title-large app-bar__titulo">
           Newton <span class="etiqueta-prototipo md-typescale-label-small">Protótipo</span>
@@ -24,14 +18,14 @@
         <p class="md-typescale-body-medium app-bar__sub">O teu ajudante de Físico-Química</p>
       </div>
       <md-icon-button id="nova-conversa" aria-label="Nova conversa" title="Nova conversa">
-        <md-icon>edit_square</md-icon>
+        <md-icon data-icone="edit_square"></md-icon>
       </md-icon-button>
     </header>
 
     <main class="conversa" id="conversa">
       <div class="coluna">
         <section class="boas-vindas" aria-labelledby="boas-vindas-titulo">
-          <span class="avatar avatar--grande" aria-hidden="true"><md-icon>science</md-icon></span>
+          <span class="avatar avatar--grande" aria-hidden="true"><md-icon data-icone="science"></md-icon></span>
           <h2 id="boas-vindas-titulo" class="md-typescale-headline-small">Olá! Sou o Newton.</h2>
           <p class="md-typescale-body-large">
             Estou aqui para te ajudar a estudar Físico&#8209;Química. Escolhe um tema ou escreve a tua dúvida.
@@ -52,7 +46,7 @@
           aria-label="Escreve a tua dúvida"
         ></md-filled-text-field>
         <md-filled-icon-button id="enviar" type="submit" aria-label="Enviar" disabled>
-          <md-icon>send</md-icon>
+          <md-icon data-icone="send"></md-icon>
         </md-filled-icon-button>
       </form>
       <p class="md-typescale-body-small compositor__nota">

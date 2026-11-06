@@ -6,6 +6,9 @@ import "@material/web/iconbutton/filled-icon-button.js";
 import "@material/web/iconbutton/icon-button.js";
 import "@material/web/progress/circular-progress.js";
 import "@material/web/textfield/filled-text-field.js";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import { icone, preencherIcones } from "./icones.js";
 import { responder, temaPorId, TEMAS_INICIAIS } from "./respostas.js";
 import "./styles/tema-cores.css";
 import "./styles/tokens.css";
@@ -73,7 +76,7 @@ function criarChips(ids, rotulo) {
 function mensagemNewton(conteudo) {
   const linha = document.createElement("div");
   linha.className = "mensagem mensagem--newton";
-  linha.innerHTML = `<span class="avatar avatar--pequeno" aria-hidden="true"><md-icon>science</md-icon></span>`;
+  linha.innerHTML = `<span class="avatar avatar--pequeno" aria-hidden="true"><md-icon>${icone("science")}</md-icon></span>`;
   const corpo = document.createElement("div");
   corpo.className = "mensagem__corpo";
   const balao = document.createElement("div");
@@ -191,4 +194,5 @@ conversa.addEventListener("scroll", () => {
   appBar.classList.toggle("is-scrolled", conversa.scrollTop > 0);
 });
 
+preencherIcones();
 document.getElementById("temas-iniciais").replaceWith(criarChips(TEMAS_INICIAIS, "Temas para começar"));
