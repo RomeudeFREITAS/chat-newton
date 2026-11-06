@@ -121,17 +121,29 @@ async function perguntar(texto, idTema) {
   atualizarEnviar();
   adicionar(mensagemAluno(pergunta));
 
-  const resposta = (idTema && temaPorId(idTema)) || responder(pergunta);
+  const resposta = idTema && temaPorId(idTema) ? { tipo: "tema", tema: temaPorId(idTema) } : responder(pergunta);
+
+  // O que mostrar: a explicação de um tema, a pergunta "qual dos temas?" (G10) ou uma mensagem.
+  let textoResposta = resposta.texto;
+  let seguintes = resposta.seguintes ?? [];
+  let rotulo = "Continuar com outro tema";
+  if (resposta.tipo === "tema") {
+    textoResposta = resposta.tema.explicacao;
+    seguintes = resposta.tema.seguintes;
+  } else if (resposta.tipo === "ambigua") {
+    seguintes = resposta.temas.map((t) => t.id);
+    rotulo = "Escolhe o tema";
+  }
 
   // Uma pequena pausa torna a conversa mais natural (sem IA, a resposta é imediata).
   const escrita = indicadorEscrita();
   adicionar(escrita);
-  await esperar(reduzirMovimento.matches ? 300 : 700 + Math.min(resposta.resposta.length, 900));
+  await esperar(reduzirMovimento.matches ? 300 : 700 + Math.min(textoResposta.length, 900));
   escrita.remove();
 
-  const { linha, corpo } = mensagemNewton(formatar(resposta.resposta));
-  if (resposta.seguintes?.length) {
-    corpo.append(criarChips(resposta.seguintes, "Continuar com outro tema"));
+  const { linha, corpo } = mensagemNewton(formatar(textoResposta));
+  if (seguintes.length) {
+    corpo.append(criarChips(seguintes, rotulo));
   }
   adicionar(linha);
 

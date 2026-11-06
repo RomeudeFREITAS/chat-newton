@@ -12,6 +12,20 @@ body {
   min-width: 0;
 }
 
+.app-bar__titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Etiqueta "Protótipo" (Guidelines P25, G2): diz que os conteúdos ainda não foram revistos */
+.etiqueta-prototipo {
+  padding: 2px 8px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
 .conversa {
   overflow-y: auto;
   overscroll-behavior: contain;
