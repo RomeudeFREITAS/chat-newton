@@ -10,7 +10,7 @@ import { CONVERSA, DESCONHECIDA, SITUACOES } from "./conteudos/situacoes.js";
 export const TEMAS = [...TEMAS_7, ...TEMAS_8, ...TEMAS_9];
 
 // Temas mostrados no ecrã de boas-vindas e quando o Newton não percebe a pergunta.
-export const TEMAS_INICIAIS = ["sistema-solar", "misturas", "transformacoes", "densidade", "acidos", "som"];
+export const TEMAS_INICIAIS = ["sistema-solar", "misturas", "densidade", "acidos", "som", "forcas"];
 
 export const temaPorId = (id) => TEMAS.find((t) => t.id === id);
 

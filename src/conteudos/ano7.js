@@ -164,7 +164,7 @@ Atenção: a **massa** é a quantidade de matéria (em kg) e não muda; o **peso
     ano: 7,
     tema: "Materiais",
     subtema: "Constituição do Mundo Material",
-    palavras: ["laboratorio", "pictograma", "simbolo de perigo", "simbolos de perigo", "seguranca", "rotulo", "reciclar", "reciclagem", "reutiliz", "materiais naturais", "material natural", "sintetic", "tipos de materiais", "materiais", " material ", " bata "],
+    palavras: ["laboratorio", "pictograma", "simbolo de perigo", "simbolos de perigo", "seguranca no laboratorio", "rotulo", "reciclar", "reciclagem", "reutiliz", "materiais naturais", "material natural", "sintetic", "tipos de materiais", "materiais", " material ", " bata "],
     explicacao: `Tudo o que nos rodeia é feito de **materiais**. Podemos agrupá-los pela origem, **naturais** (madeira, algodão) ou **fabricados pelo ser humano** (plástico, vidro), e pelas propriedades, como dissolverem-se em água ou conduzirem a corrente elétrica.
 
 Os materiais são recursos limitados: por isso devemos **reduzir, reutilizar e reciclar**.
@@ -261,7 +261,7 @@ Numa **solução**, o **soluto** dissolve-se no **solvente**. A solução pode s
     ano: 7,
     tema: "Materiais",
     subtema: "Transformações Físicas e Químicas",
-    palavras: ["transformac", "fisica ou quimica", "fisico ou quimico", "fisicas e quimicas", "fisicas ou quimicas", "equacao de palavras", "enferruj", "ferrugem", " arder ", "queima"],
+    palavras: ["transformacao fisica", "transformacoes fisicas", "transformacao quimica", "transformacoes quimicas", "fisica ou quimica", "fisico ou quimico", "fisicas e quimicas", "fisicas ou quimicas", "equacao de palavras", "enferruj", "ferrugem", " arder ", "queima"],
     explicacao: `Os materiais podem sofrer dois tipos de transformações:
 
 • **Transformação física**: a substância continua a ser a mesma; só muda de forma ou de estado. Exemplos: o gelo a derreter, o papel a ser rasgado, o açúcar a dissolver-se.
@@ -453,7 +453,7 @@ Estas técnicas são usadas nas **ETA**, que tratam a água que chega às nossas
     ano: 7,
     tema: "Energia",
     subtema: "Fontes de Energia e Transferências de Energia",
-    palavras: ["energia", "renovav", "fonte de energia", "fontes de energia", "energia solar", "painel solar", "paineis solares", "eolica", "calor", "temperatura", "conducao", "conveccao", "radiacao", "equilibrio termico", "joule"],
+    palavras: ["energia", "renovav", "fonte de energia", "fontes de energia", "energia solar", "painel solar", "paineis solares", "eolica", "calor", "temperatura", "conducao", "conveccao", "radiacao", "equilibrio termico", "joules", "um joule"],
     explicacao: `Há sistemas que são **fontes** de energia (cedem energia) e outros que são **recetores** (recebem). Mede-se em **joules (J)** e, no total, **mantém-se**: não se cria nem se destrói.
 
 A energia transfere-se como calor de três formas:
