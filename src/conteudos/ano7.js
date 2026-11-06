@@ -453,7 +453,7 @@ Estas técnicas são usadas nas **ETA**, que tratam a água que chega às nossas
     ano: 7,
     tema: "Energia",
     subtema: "Fontes de Energia e Transferências de Energia",
-    palavras: ["energia", "renovav", "fonte de energia", "fontes de energia", "energia solar", "painel solar", "paineis solares", "eolica", "combustive", "calor", "temperatura", "conducao", "conveccao", "radiacao", "equilibrio termico", "joule"],
+    palavras: ["energia", "renovav", "fonte de energia", "fontes de energia", "energia solar", "painel solar", "paineis solares", "eolica", "calor", "temperatura", "conducao", "conveccao", "radiacao", "equilibrio termico", "joule"],
     explicacao: `Há sistemas que são **fontes** de energia (cedem energia) e outros que são **recetores** (recebem). Mede-se em **joules (J)** e, no total, **mantém-se**: não se cria nem se destrói.
 
 A energia transfere-se como calor de três formas:

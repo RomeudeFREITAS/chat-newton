@@ -3,10 +3,11 @@
 // Os conteúdos vivem em src/conteudos/ e são a futura base de conhecimento da IA.
 
 import { TEMAS_7 } from "./conteudos/ano7.js";
-import { TEMAS_8_9 } from "./conteudos/anos8e9.js";
+import { TEMAS_8 } from "./conteudos/ano8.js";
+import { TEMAS_9 } from "./conteudos/ano9.js";
 import { CONVERSA, DESCONHECIDA, SITUACOES } from "./conteudos/situacoes.js";
 
-export const TEMAS = [...TEMAS_7, ...TEMAS_8_9];
+export const TEMAS = [...TEMAS_7, ...TEMAS_8, ...TEMAS_9];
 
 // Temas mostrados no ecrã de boas-vindas e quando o Newton não percebe a pergunta.
 export const TEMAS_INICIAIS = ["sistema-solar", "misturas", "transformacoes", "densidade", "acidos", "som"];
