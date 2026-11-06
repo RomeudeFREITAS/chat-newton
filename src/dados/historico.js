@@ -223,6 +223,14 @@ export async function abrirHistorico({
       });
     },
 
+    /** Volta a guardar uma conversa apagada, com as mesmas mensagens (para o "Anular"). */
+    restaurarConversa({ conversa, mensagens }) {
+      return executar(["conversas", "mensagens"], "readwrite", async (acesso) => {
+        await acesso.guardar("conversas", conversa);
+        for (const mensagem of mensagens) await acesso.guardar("mensagens", mensagem);
+      });
+    },
+
     /** Apaga todas as conversas; o perfil (ano) mantém-se. */
     apagarHistorico() {
       return executar(["conversas", "mensagens"], "readwrite", async (acesso) => {

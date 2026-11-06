@@ -2,9 +2,26 @@
 
 body {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas: "barra" "conversa" "compositor";
   height: 100dvh;
   overflow: hidden;
+}
+
+.app-bar {
+  grid-area: barra;
+}
+.conversa {
+  grid-area: conversa;
+}
+.compositor {
+  grid-area: compositor;
+}
+
+/* Com o botão da gaveta à esquerda, a barra segue o M3: ícone a 4 px da margem */
+.app-bar:has(.app-bar__menu) {
+  padding-left: 4px;
 }
 
 .app-bar__texto {
@@ -183,4 +200,227 @@ body {
   padding-inline: 16px;
   text-align: center;
   color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---------- Gaveta do histórico (navigation drawer do M3, construída com tokens) ---------- */
+
+/* Ecrãs pequenos e médios: gaveta modal, por cima da conversa, com fundo escurecido */
+.gaveta {
+  position: fixed;
+  inset-block: 0;
+  left: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  width: min(360px, calc(100vw - 56px));
+  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+  border-radius: 0 var(--md-sys-shape-corner-large) var(--md-sys-shape-corner-large) 0;
+  background: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface-variant);
+  box-shadow: var(--md-sys-elevation-level1);
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition:
+    transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-accelerate),
+    visibility 0s linear var(--md-sys-motion-duration-medium2);
+}
+
+.gaveta.aberta {
+  transform: none;
+  visibility: visible;
+  transition: transform var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+.gaveta-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+}
+
+.gaveta-scrim.visivel {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.gaveta__topo {
+  display: grid;
+  gap: 12px;
+  padding: 4px 4px 8px;
+}
+
+.gaveta__titulo {
+  padding: 12px 12px 0;
+}
+
+.gaveta__nova {
+  justify-self: start;
+}
+
+.gaveta__lista {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.gaveta__vazio {
+  padding: 16px;
+}
+
+.gaveta__grupo-titulo {
+  padding: 18px 16px 8px;
+}
+
+.gaveta__grupo ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gaveta__entrada {
+  position: relative;
+}
+
+/* Cada conversa: item de 56 px em forma de pílula; a conversa aberta tem o indicador ativo */
+.gaveta__item {
+  display: block;
+  width: 100%;
+  height: 56px;
+  padding: 0 56px 0 16px;
+  border: 0;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.gaveta__item:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+}
+
+.gaveta__item:active {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 10%, transparent);
+}
+
+.gaveta__item:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: -3px;
+}
+
+.gaveta__item[aria-current] {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.gaveta__item[aria-current]:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-secondary-container) 8%, var(--md-sys-color-secondary-container));
+}
+
+.gaveta__apagar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  --md-icon-button-icon-color: var(--md-sys-color-on-surface-variant);
+  --md-icon-button-hover-icon-color: var(--md-sys-color-on-surface);
+}
+
+/* Ecrãs grandes (≥ 1200 px): gaveta sempre visível, ao lado da conversa (standard drawer) */
+@media (min-width: 1200px) {
+  body {
+    grid-template-columns: 360px minmax(0, 1fr);
+    grid-template-areas:
+      "gaveta barra"
+      "gaveta conversa"
+      "gaveta compositor";
+  }
+
+  .gaveta {
+    grid-area: gaveta;
+    position: static;
+    width: auto;
+    border-radius: 0;
+    box-shadow: none;
+    transform: none;
+    visibility: visible;
+    transition: none;
+  }
+
+  .gaveta-scrim,
+  .app-bar__menu {
+    display: none;
+  }
+
+  .app-bar:has(.app-bar__menu) {
+    padding-left: 16px;
+  }
+}
+
+/* ---------- Avisos (snackbar do M3) ---------- */
+
+.avisos {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(var(--altura-compositor, 0px) + 8px);
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  max-width: 560px;
+  padding: 4px 8px 4px 16px;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  box-shadow: var(--md-sys-elevation-level3);
+  pointer-events: auto;
+  animation: entrar var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+.aviso__texto {
+  padding-block: 10px;
+}
+
+.aviso__acao {
+  flex: none;
+  margin-left: auto;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-inverse-primary);
+  cursor: pointer;
+}
+
+.aviso__acao:hover {
+  background: color-mix(in srgb, var(--md-sys-color-inverse-primary) 8%, transparent);
+}
+
+.aviso__acao:focus-visible {
+  outline: 3px solid var(--md-sys-color-inverse-primary);
+  outline-offset: 2px;
+}
+
+/* Em ecrãs grandes o aviso aparece em baixo da gaveta, onde a ação aconteceu */
+@media (min-width: 1200px) {
+  .avisos {
+    right: auto;
+    bottom: 16px;
+    width: 328px;
+  }
 }

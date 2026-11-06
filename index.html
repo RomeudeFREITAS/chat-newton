@@ -9,7 +9,29 @@
     <script type="module" src="/src/main.js"></script>
   </head>
   <body>
+    <aside class="gaveta" id="gaveta" aria-labelledby="gaveta-titulo">
+      <div class="gaveta__topo">
+        <h2 id="gaveta-titulo" class="md-typescale-title-small gaveta__titulo">As tuas conversas</h2>
+        <md-filled-tonal-button id="gaveta-nova" class="gaveta__nova">
+          <md-icon slot="icon" data-icone="edit_square"></md-icon>
+          Nova conversa
+        </md-filled-tonal-button>
+      </div>
+      <nav class="gaveta__lista" id="gaveta-lista" aria-label="Conversas guardadas"></nav>
+    </aside>
+    <div class="gaveta-scrim" id="gaveta-scrim"></div>
+
     <header class="app-bar" id="app-bar">
+      <md-icon-button
+        id="abrir-gaveta"
+        class="app-bar__menu"
+        aria-label="Abrir as tuas conversas"
+        title="As tuas conversas"
+        aria-controls="gaveta"
+        aria-expanded="false"
+      >
+        <md-icon data-icone="menu"></md-icon>
+      </md-icon-button>
       <span class="avatar" aria-hidden="true"><md-icon data-icone="science"></md-icon></span>
       <div class="app-bar__texto">
         <h1 class="md-typescale-title-large app-bar__titulo">
@@ -54,5 +76,7 @@
         professor. Em caso de dúvida, confirma com o teu.
       </p>
     </footer>
+
+    <div class="avisos" id="avisos" role="status" aria-live="polite"></div>
   </body>
 </html>
