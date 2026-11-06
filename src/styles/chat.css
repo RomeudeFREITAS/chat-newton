@@ -212,7 +212,7 @@ body {
   z-index: 30;
   display: flex;
   flex-direction: column;
-  width: min(360px, calc(100vw - 56px));
+  width: min(320px, calc(100vw - 56px));
   padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
   border-radius: 0 var(--md-sys-shape-corner-large) var(--md-sys-shape-corner-large) 0;
   background: var(--md-sys-color-surface-container-low);
@@ -249,15 +249,30 @@ body {
 .gaveta__topo {
   display: grid;
   gap: 12px;
-  padding: 4px 4px 8px;
+  padding: 0 8px 8px;
+}
+
+/* ☰ + título, alinhados com a barra superior; o ☰ fica no mesmo sítio com a gaveta aberta ou recolhida */
+.gaveta__cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .gaveta__titulo {
-  padding: 12px 12px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .gaveta__nova {
   justify-self: start;
+}
+
+/* O botão "Nova conversa" só com ícone aparece apenas com a gaveta recolhida */
+.gaveta__nova-icone {
+  display: none;
 }
 
 .gaveta__lista {
@@ -335,7 +350,8 @@ body {
 /* Ecrãs grandes (≥ 1200 px): gaveta sempre visível, ao lado da conversa (standard drawer) */
 @media (min-width: 1200px) {
   body {
-    grid-template-columns: 360px minmax(0, 1fr);
+    grid-template-columns: var(--largura-gaveta, 280px) minmax(0, 1fr);
+    transition: grid-template-columns var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     grid-template-areas:
       "gaveta barra"
       "gaveta conversa"
@@ -346,6 +362,8 @@ body {
     grid-area: gaveta;
     position: static;
     width: auto;
+    min-width: 0;
+    overflow: hidden;
     border-radius: 0;
     box-shadow: none;
     transform: none;
@@ -353,9 +371,26 @@ body {
     transition: none;
   }
 
+  /* A gaveta já tem "Nova conversa" (aberta ou recolhida): na barra superior seria repetido */
   .gaveta-scrim,
-  .app-bar__menu {
+  .app-bar__menu,
+  .app-bar #nova-conversa {
     display: none;
+  }
+
+  /* Gaveta recolhida: barra estreita de 80 px só com o ☰ e a nova conversa (como uma navigation rail) */
+  body.gaveta-recolhida {
+    --largura-gaveta: 80px;
+  }
+
+  .gaveta-recolhida .gaveta__titulo,
+  .gaveta-recolhida .gaveta__nova,
+  .gaveta-recolhida .gaveta__lista {
+    display: none;
+  }
+
+  .gaveta-recolhida .gaveta__nova-icone {
+    display: inline-flex;
   }
 
   .app-bar:has(.app-bar__menu) {
@@ -421,6 +456,6 @@ body {
   .avisos {
     right: auto;
     bottom: 16px;
-    width: 328px;
+    width: 256px;
   }
 }

@@ -4,6 +4,7 @@ import "@material/web/chips/chip-set.js";
 import "@material/web/chips/suggestion-chip.js";
 import "@material/web/icon/icon.js";
 import "@material/web/iconbutton/filled-icon-button.js";
+import "@material/web/iconbutton/filled-tonal-icon-button.js";
 import "@material/web/iconbutton/icon-button.js";
 import "@material/web/progress/circular-progress.js";
 import "@material/web/textfield/filled-text-field.js";
@@ -30,6 +31,7 @@ const gaveta = document.getElementById("gaveta");
 const gavetaLista = document.getElementById("gaveta-lista");
 const gavetaScrim = document.getElementById("gaveta-scrim");
 const abrirGaveta = document.getElementById("abrir-gaveta");
+const alternarGaveta = document.getElementById("alternar-gaveta");
 
 const reduzirMovimento = matchMedia("(prefers-reduced-motion: reduce)");
 let ocupado = false;
@@ -281,6 +283,20 @@ function mostrarConversa({ conversa: dados, mensagens: lista }) {
 const ecraGrande = matchMedia("(min-width: 1200px)");
 let gavetaAberta = false;
 
+// Em ecrãs grandes o aluno pode recolher a gaveta; o navegador lembra a escolha (só uma preferência)
+const CHAVE_GAVETA_RECOLHIDA = "newton:gaveta-recolhida";
+let gavetaRecolhida = false;
+try {
+  gavetaRecolhida = localStorage.getItem(CHAVE_GAVETA_RECOLHIDA) === "sim";
+} catch {
+  // sem localStorage, a gaveta começa aberta
+}
+
+function definirRotulo(botao, texto) {
+  botao.setAttribute("aria-label", texto);
+  botao.title = texto;
+}
+
 /** Em ecrãs pequenos a gaveta é modal: o resto da página fica inativo enquanto está aberta. */
 function aplicarEstadoGaveta() {
   const modal = !ecraGrande.matches;
@@ -297,6 +313,29 @@ function aplicarEstadoGaveta() {
     gaveta.removeAttribute("aria-modal");
   }
   abrirGaveta.setAttribute("aria-expanded", String(aberta));
+
+  // O ☰ dentro da gaveta: em ecrãs pequenos fecha-a; em ecrãs grandes recolhe-a ou expande-a
+  const recolhida = !modal && gavetaRecolhida;
+  document.body.classList.toggle("gaveta-recolhida", recolhida);
+  if (modal) {
+    definirRotulo(alternarGaveta, "Fechar as tuas conversas");
+    alternarGaveta.removeAttribute("aria-expanded");
+  } else {
+    definirRotulo(alternarGaveta, recolhida ? "Expandir o menu lateral" : "Recolher o menu lateral");
+    alternarGaveta.setAttribute("aria-expanded", String(!recolhida));
+  }
+}
+
+function alternarAGaveta() {
+  if (!ecraGrande.matches) return fecharGaveta();
+  gavetaRecolhida = !gavetaRecolhida;
+  try {
+    if (gavetaRecolhida) localStorage.setItem(CHAVE_GAVETA_RECOLHIDA, "sim");
+    else localStorage.removeItem(CHAVE_GAVETA_RECOLHIDA);
+  } catch {
+    // sem localStorage, a escolha vale só até fechar a página
+  }
+  aplicarEstadoGaveta();
 }
 
 function abrirAGaveta() {
@@ -386,6 +425,8 @@ campo.addEventListener("input", atualizarEnviar);
 enviar.addEventListener("click", () => formulario.requestSubmit());
 document.getElementById("nova-conversa").addEventListener("click", novaConversa);
 document.getElementById("gaveta-nova").addEventListener("click", novaConversa);
+document.getElementById("gaveta-nova-icone").addEventListener("click", novaConversa);
+alternarGaveta.addEventListener("click", alternarAGaveta);
 abrirGaveta.addEventListener("click", abrirAGaveta);
 gavetaScrim.addEventListener("click", () => fecharGaveta());
 document.addEventListener("keydown", (evento) => {

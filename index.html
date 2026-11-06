@@ -11,11 +11,31 @@
   <body>
     <aside class="gaveta" id="gaveta" aria-labelledby="gaveta-titulo">
       <div class="gaveta__topo">
-        <h2 id="gaveta-titulo" class="md-typescale-title-small gaveta__titulo">As tuas conversas</h2>
+        <div class="gaveta__cabecalho">
+          <md-icon-button
+            id="alternar-gaveta"
+            class="gaveta__alternar"
+            aria-label="Recolher o menu lateral"
+            title="Recolher o menu lateral"
+            aria-controls="gaveta"
+            aria-expanded="true"
+          >
+            <md-icon data-icone="menu"></md-icon>
+          </md-icon-button>
+          <h2 id="gaveta-titulo" class="md-typescale-title-small gaveta__titulo">As tuas conversas</h2>
+        </div>
         <md-filled-tonal-button id="gaveta-nova" class="gaveta__nova">
           <md-icon slot="icon" data-icone="edit_square"></md-icon>
           Nova conversa
         </md-filled-tonal-button>
+        <md-filled-tonal-icon-button
+          id="gaveta-nova-icone"
+          class="gaveta__nova-icone"
+          aria-label="Nova conversa"
+          title="Nova conversa"
+        >
+          <md-icon data-icone="edit_square"></md-icon>
+        </md-filled-tonal-icon-button>
       </div>
       <nav class="gaveta__lista" id="gaveta-lista" aria-label="Conversas guardadas"></nav>
     </aside>
