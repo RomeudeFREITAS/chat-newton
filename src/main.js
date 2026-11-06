@@ -8,6 +8,7 @@ import "@material/web/progress/circular-progress.js";
 import "@material/web/textfield/filled-text-field.js";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
+import { abrirHistorico, pedirArmazenamentoPersistente } from "./dados/historico.js";
 import { icone, preencherIcones } from "./icones.js";
 import { responder, temaPorId, TEMAS_INICIAIS } from "./respostas.js";
 import "./styles/tema-cores.css";
@@ -24,6 +25,41 @@ const appBar = document.getElementById("app-bar");
 
 const reduzirMovimento = matchMedia("(prefers-reduced-motion: reduce)");
 let ocupado = false;
+
+// ---------- Histórico (guardado no navegador: Fase 3) ----------
+
+let historico = null;
+let conversaAtual = null;
+
+// Lembra que conversa estava aberta (ou que o aluno pediu uma nova), para a retomar ao voltar.
+const CHAVE_CONVERSA_ABERTA = "newton:conversa-aberta";
+function lembrarConversaAberta(valor) {
+  try {
+    localStorage.setItem(CHAVE_CONVERSA_ABERTA, valor);
+  } catch {
+    // sem localStorage, o Newton retoma a conversa mais recente
+  }
+}
+function conversaAbertaGuardada() {
+  try {
+    return localStorage.getItem(CHAVE_CONVERSA_ABERTA);
+  } catch {
+    return null;
+  }
+}
+
+/** Guardar nunca pode estragar a conversa: se falhar, o aluno continua a conversar. */
+async function guardar(operacao) {
+  if (!historico) return null;
+  try {
+    return await operacao(historico);
+  } catch (erro) {
+    console.warn("Não foi possível guardar no histórico:", erro);
+    return null;
+  }
+}
+
+const tituloDe = (texto) => (texto.length > 60 ? `${texto.slice(0, 59).trimEnd()}…` : texto);
 
 // ---------- Construção das mensagens ----------
 
@@ -97,6 +133,15 @@ function mensagemAluno(texto) {
   return linha;
 }
 
+/** Balão do Newton com as sugestões de temas por baixo. */
+function respostaNewton(texto, seguintes, tipo) {
+  const { linha, corpo } = mensagemNewton(formatar(texto));
+  if (seguintes?.length) {
+    corpo.append(criarChips(seguintes, tipo === "ambigua" ? "Escolhe o tema" : "Continuar com outro tema"));
+  }
+  return linha;
+}
+
 function indicadorEscrita() {
   const conteudo = document.createElement("span");
   conteudo.className = "a-escrever";
@@ -124,18 +169,26 @@ async function perguntar(texto, idTema) {
   atualizarEnviar();
   adicionar(mensagemAluno(pergunta));
 
+  // Guardar a pergunta (a conversa só é criada na primeira mensagem)
+  await historicoPronto;
+  const primeiraPergunta = !conversaAtual;
+  if (!conversaAtual) {
+    conversaAtual = await guardar((h) => h.criarConversa({ titulo: tituloDe(pergunta) }));
+    if (conversaAtual) lembrarConversaAberta(conversaAtual.id);
+  }
+  const idConversa = conversaAtual?.id;
+  if (idConversa) await guardar((h) => h.adicionarMensagem(idConversa, { autor: "aluno", texto: pergunta }));
+
   const resposta = idTema && temaPorId(idTema) ? { tipo: "tema", tema: temaPorId(idTema) } : responder(pergunta);
 
   // O que mostrar: a explicação de um tema, a pergunta "qual dos temas?" (G10) ou uma mensagem.
   let textoResposta = resposta.texto;
   let seguintes = resposta.seguintes ?? [];
-  let rotulo = "Continuar com outro tema";
   if (resposta.tipo === "tema") {
     textoResposta = resposta.tema.explicacao;
     seguintes = resposta.tema.seguintes;
   } else if (resposta.tipo === "ambigua") {
     seguintes = resposta.temas.map((t) => t.id);
-    rotulo = "Escolhe o tema";
   }
 
   // Uma pequena pausa torna a conversa mais natural (sem IA, a resposta é imediata).
@@ -144,11 +197,24 @@ async function perguntar(texto, idTema) {
   await esperar(reduzirMovimento.matches ? 300 : 700 + Math.min(textoResposta.length, 900));
   escrita.remove();
 
-  const { linha, corpo } = mensagemNewton(formatar(textoResposta));
-  if (seguintes.length) {
-    corpo.append(criarChips(seguintes, rotulo));
+  adicionar(respostaNewton(textoResposta, seguintes, resposta.tipo));
+
+  // Guardar a resposta tal como foi mostrada; o título da conversa passa a ser o tema da primeira resposta
+  if (idConversa) {
+    await guardar((h) =>
+      h.adicionarMensagem(idConversa, {
+        autor: "newton",
+        texto: textoResposta,
+        tipo: resposta.tipo,
+        temaId: resposta.tipo === "tema" ? resposta.tema.id : null,
+        seguintes,
+        situacao: resposta.situacao ?? null,
+      }),
+    );
+    if (primeiraPergunta && resposta.tipo === "tema") {
+      conversaAtual = (await guardar((h) => h.renomearConversa(idConversa, resposta.tema.titulo))) ?? conversaAtual;
+    }
   }
-  adicionar(linha);
 
   ocupado = false;
   atualizarEnviar();
@@ -159,6 +225,9 @@ function atualizarEnviar() {
 }
 
 function novaConversa() {
+  // A conversa anterior fica guardada; a nova só é criada quando o aluno escrever
+  conversaAtual = null;
+  lembrarConversaAberta("nova");
   mensagens.replaceChildren();
   campo.value = "";
   atualizarEnviar();
@@ -193,6 +262,35 @@ document.getElementById("nova-conversa").addEventListener("click", novaConversa)
 conversa.addEventListener("scroll", () => {
   appBar.classList.toggle("is-scrolled", conversa.scrollTop > 0);
 });
+
+/** Abre o histórico e retoma a conversa que estava aberta (G12). */
+async function iniciarHistorico() {
+  historico = await abrirHistorico();
+  pedirArmazenamentoPersistente();
+
+  const aberta = conversaAbertaGuardada();
+  if (aberta === "nova") return;
+  try {
+    let dados = aberta ? await historico.obterConversa(aberta) : null;
+    if (!dados) {
+      const ultima = await historico.ultimaConversa();
+      dados = ultima ? await historico.obterConversa(ultima.id) : null;
+    }
+    if (!dados?.mensagens.length) return;
+
+    conversaAtual = dados.conversa;
+    for (const m of dados.mensagens) {
+      const elemento = m.autor === "aluno" ? mensagemAluno(m.texto) : respostaNewton(m.texto, m.seguintes, m.tipo);
+      elemento.classList.add("sem-animacao");
+      mensagens.append(elemento);
+    }
+    conversa.scrollTo({ top: conversa.scrollHeight });
+  } catch (erro) {
+    console.warn("Não foi possível retomar a conversa:", erro);
+  }
+}
+
+const historicoPronto = iniciarHistorico();
 
 preencherIcones();
 document.getElementById("temas-iniciais").replaceWith(criarChips(TEMAS_INICIAIS, "Temas para começar"));

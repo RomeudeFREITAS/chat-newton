@@ -28,3 +28,6 @@ src/styles/guia.css
 
 # Gerador de cores (o resultado, src/styles/tema-cores.css, é público)
 scripts/
+
+# Testes automáticos (só locais, por decisão do utilizador)
+tests/
