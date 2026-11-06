@@ -347,6 +347,37 @@ body {
   --md-icon-button-hover-icon-color: var(--md-sys-color-on-surface);
 }
 
+/* Rodapé da gaveta: guardar ou não a conversa, apagar o histórico e onde ficam os dados */
+.gaveta__rodape {
+  display: grid;
+  gap: 4px;
+  padding: 12px 4px 0;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.gaveta__opcao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding-inline: 12px 4px;
+  color: var(--md-sys-color-on-surface);
+  cursor: pointer;
+}
+
+.gaveta__opcao[hidden] {
+  display: none;
+}
+
+.gaveta__apagar-tudo {
+  justify-self: start;
+}
+
+.gaveta__nota {
+  padding: 4px 12px 0;
+}
+
 /* Ecrãs grandes (≥ 1200 px): gaveta sempre visível, ao lado da conversa (standard drawer) */
 @media (min-width: 1200px) {
   body {
@@ -385,7 +416,8 @@ body {
 
   .gaveta-recolhida .gaveta__titulo,
   .gaveta-recolhida .gaveta__nova,
-  .gaveta-recolhida .gaveta__lista {
+  .gaveta-recolhida .gaveta__lista,
+  .gaveta-recolhida .gaveta__rodape {
     display: none;
   }
 
@@ -396,6 +428,30 @@ body {
   .app-bar:has(.app-bar__menu) {
     padding-left: 16px;
   }
+}
+
+/* Conversa que não está a ser guardada (o aluno desligou "Guardar esta conversa") */
+.compositor__temporaria {
+  margin: 0 auto 6px;
+  padding-inline: 16px;
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Os diálogos (e o seu fundo escurecido) ficam por cima de tudo, incluindo a gaveta */
+.camada-dialogos {
+  position: fixed;
+  z-index: 50;
+}
+
+/* Ação destrutiva no diálogo de confirmação */
+.botao-perigo {
+  --md-text-button-label-text-color: var(--md-sys-color-error);
+  --md-text-button-hover-label-text-color: var(--md-sys-color-error);
+  --md-text-button-focus-label-text-color: var(--md-sys-color-error);
+  --md-text-button-pressed-label-text-color: var(--md-sys-color-error);
+  --md-text-button-hover-state-layer-color: var(--md-sys-color-error);
+  --md-text-button-pressed-state-layer-color: var(--md-sys-color-error);
 }
 
 /* ---------- Avisos (snackbar do M3) ---------- */

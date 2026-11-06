@@ -38,6 +38,22 @@
         </md-filled-tonal-icon-button>
       </div>
       <nav class="gaveta__lista" id="gaveta-lista" aria-label="Conversas guardadas"></nav>
+
+      <!-- Controlo dos dados (Guidelines G16, G17, P16) -->
+      <div class="gaveta__rodape">
+        <label class="gaveta__opcao md-typescale-label-large" id="opcao-guardar">
+          Guardar esta conversa
+          <md-switch id="guardar-conversa" selected></md-switch>
+        </label>
+        <md-text-button id="apagar-historico" class="gaveta__apagar-tudo">
+          <md-icon slot="icon" data-icone="delete"></md-icon>
+          Apagar o meu histórico
+        </md-text-button>
+        <p class="gaveta__nota md-typescale-body-small" id="gaveta-nota">
+          As tuas conversas ficam só neste navegador: não são enviadas para lado nenhum. Num computador partilhado,
+          quem usar este navegador também as consegue ver.
+        </p>
+      </div>
     </aside>
     <div class="gaveta-scrim" id="gaveta-scrim"></div>
 
@@ -80,6 +96,9 @@
     </main>
 
     <footer class="compositor">
+      <p class="md-typescale-label-medium compositor__temporaria" id="estado-temporaria" hidden>
+        Esta conversa não está a ser guardada: desaparece quando saíres ou abrires outra.
+      </p>
       <form class="compositor__form coluna" id="formulario">
         <md-filled-text-field
           id="campo"
@@ -98,5 +117,19 @@
     </footer>
 
     <div class="avisos" id="avisos" role="status" aria-live="polite"></div>
+
+    <!-- Camada própria: o fundo escurecido do diálogo tem de ficar por cima da gaveta e da barra superior -->
+    <div class="camada-dialogos">
+      <md-dialog id="dialogo-apagar" type="alert">
+        <div slot="headline">Apagar todas as conversas?</div>
+        <form slot="content" id="form-apagar" method="dialog">
+          <span id="dialogo-apagar-texto">Vais apagar as conversas guardadas neste navegador. Depois não as consegues recuperar.</span>
+        </form>
+        <div slot="actions">
+          <md-text-button form="form-apagar" value="cancelar" autofocus>Cancelar</md-text-button>
+          <md-text-button form="form-apagar" value="apagar" class="botao-perigo">Apagar tudo</md-text-button>
+        </div>
+      </md-dialog>
+    </div>
   </body>
 </html>

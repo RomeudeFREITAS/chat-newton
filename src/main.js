@@ -1,5 +1,8 @@
 // Chat do Newton (sem IA): o aluno pergunta, o Newton responde com respostas pré-definidas.
 import "@material/web/button/filled-tonal-button.js";
+import "@material/web/button/text-button.js";
+import "@material/web/dialog/dialog.js";
+import "@material/web/switch/switch.js";
 import "@material/web/chips/chip-set.js";
 import "@material/web/chips/suggestion-chip.js";
 import "@material/web/icon/icon.js";
@@ -32,6 +35,10 @@ const gavetaLista = document.getElementById("gaveta-lista");
 const gavetaScrim = document.getElementById("gaveta-scrim");
 const abrirGaveta = document.getElementById("abrir-gaveta");
 const alternarGaveta = document.getElementById("alternar-gaveta");
+const interruptorGuardar = document.getElementById("guardar-conversa");
+const estadoTemporaria = document.getElementById("estado-temporaria");
+const botaoApagarHistorico = document.getElementById("apagar-historico");
+const dialogoApagar = document.getElementById("dialogo-apagar");
 
 const reduzirMovimento = matchMedia("(prefers-reduced-motion: reduce)");
 let ocupado = false;
@@ -43,6 +50,10 @@ let conversaAtual = null;
 // Muda sempre que o ecrã passa a mostrar outra conversa: uma resposta que ainda estava "a ser
 // escrita" é guardada na conversa certa, mas não aparece na conversa que o aluno abriu entretanto.
 let vista = 0;
+// O que está no ecrã, mensagem a mensagem (para voltar a guardar uma conversa que o aluno deixou de guardar)
+let registoAtual = [];
+// true quando o aluno desligou "Guardar esta conversa": nada desta conversa fica no histórico
+let conversaTemporaria = false;
 
 // Que conversa está aberta neste separador. Recarregar a página mantém-na; fechar o site e voltar
 // começa uma conversa nova (a anterior fica na gaveta), como no ChatGPT ou no Gemini.
@@ -183,12 +194,13 @@ async function perguntar(texto, idTema) {
   ocupado = true;
   atualizarEnviar();
   adicionar(mensagemAluno(pergunta));
+  registoAtual.push({ autor: "aluno", texto: pergunta });
   const minhaVista = vista;
 
-  // Guardar a pergunta (a conversa só é criada na primeira mensagem)
+  // Guardar a pergunta (a conversa só é criada na primeira mensagem; nunca, se o aluno pediu para não guardar)
   await historicoPronto;
   const primeiraPergunta = !conversaAtual;
-  if (!conversaAtual) {
+  if (!conversaAtual && !conversaTemporaria) {
     conversaAtual = await guardar((h) => h.criarConversa({ titulo: tituloDe(pergunta) }));
     if (conversaAtual) lembrarConversaAberta(conversaAtual.id);
   }
@@ -216,20 +228,22 @@ async function perguntar(texto, idTema) {
   await esperar(reduzirMovimento.matches ? 300 : 700 + Math.min(textoResposta.length, 900));
   escrita.remove();
 
-  if (vista === minhaVista) adicionar(respostaNewton(textoResposta, seguintes, resposta.tipo));
+  const registoNewton = {
+    autor: "newton",
+    texto: textoResposta,
+    tipo: resposta.tipo,
+    temaId: resposta.tipo === "tema" ? resposta.tema.id : null,
+    seguintes,
+    situacao: resposta.situacao ?? null,
+  };
+  if (vista === minhaVista) {
+    adicionar(respostaNewton(textoResposta, seguintes, resposta.tipo));
+    registoAtual.push(registoNewton);
+  }
 
   // Guardar a resposta tal como foi mostrada; o título da conversa passa a ser o tema da primeira resposta
   if (idConversa) {
-    await guardar((h) =>
-      h.adicionarMensagem(idConversa, {
-        autor: "newton",
-        texto: textoResposta,
-        tipo: resposta.tipo,
-        temaId: resposta.tipo === "tema" ? resposta.tema.id : null,
-        seguintes,
-        situacao: resposta.situacao ?? null,
-      }),
-    );
+    await guardar((h) => h.adicionarMensagem(idConversa, registoNewton));
     if (primeiraPergunta && resposta.tipo === "tema") {
       const renomeada = await guardar((h) => h.renomearConversa(idConversa, resposta.tema.titulo));
       if (renomeada && conversaAtual?.id === idConversa) conversaAtual = renomeada;
@@ -243,11 +257,22 @@ async function perguntar(texto, idTema) {
 
 function atualizarEnviar() {
   enviar.disabled = ocupado || !campo.value.trim();
+  // Enquanto o Newton escreve, não se muda o "guardar" (a resposta ainda vai a caminho)
+  interruptorGuardar.disabled = ocupado;
+}
+
+/** Mostra se a conversa está a ser guardada (interruptor na gaveta e frase junto à caixa de escrita). */
+function mostrarEstadoGuardar() {
+  interruptorGuardar.selected = !conversaTemporaria;
+  estadoTemporaria.hidden = !conversaTemporaria;
 }
 
 /** Limpa o ecrã para uma conversa em branco (a anterior fica guardada na gaveta). */
 function limparVista() {
   vista++;
+  registoAtual = [];
+  conversaTemporaria = false;
+  mostrarEstadoGuardar();
   conversaAtual = null;
   lembrarConversaAberta(null);
   mensagens.replaceChildren();
@@ -268,6 +293,16 @@ function novaConversa() {
 function mostrarConversa({ conversa: dados, mensagens: lista }) {
   vista++;
   conversaAtual = dados;
+  conversaTemporaria = false;
+  mostrarEstadoGuardar();
+  registoAtual = lista.map(({ autor, texto, tipo, temaId, seguintes, situacao }) => ({
+    autor,
+    texto,
+    tipo,
+    temaId,
+    seguintes,
+    situacao,
+  }));
   lembrarConversaAberta(dados.id);
   mensagens.replaceChildren();
   for (const m of lista) {
@@ -354,6 +389,7 @@ function fecharGaveta({ devolverFoco = true } = {}) {
 
 async function atualizarGaveta() {
   const conversas = (await guardar((h) => h.listarConversas())) ?? [];
+  botaoApagarHistorico.disabled = !conversas.length;
   desenharLista(gavetaLista, conversas, conversaAtual?.id, { aoAbrir: abrirConversa, aoApagar: apagarConversa });
 }
 
@@ -402,6 +438,70 @@ async function apagarConversa(id) {
   });
 }
 
+// ---------- Controlo dos dados (G16, G17) ----------
+
+/** "Guardar esta conversa": desligar tira-a do histórico (fica no ecrã); ligar volta a guardá-la. */
+async function mudarGuardar() {
+  await historicoPronto;
+  if (!interruptorGuardar.selected) {
+    conversaTemporaria = true;
+    const id = conversaAtual?.id;
+    conversaAtual = null;
+    lembrarConversaAberta(null);
+    if (id) await guardar((h) => h.apagarConversa(id));
+    mostrarAviso("Conversa retirada do histórico.");
+  } else {
+    conversaTemporaria = false;
+    if (registoAtual.length) {
+      // O título segue a mesma regra de sempre: o tema da primeira resposta ou, senão, a primeira pergunta
+      const primeiraResposta = registoAtual.find((m) => m.autor === "newton");
+      const titulo =
+        primeiraResposta?.tipo === "tema"
+          ? temaPorId(primeiraResposta.temaId)?.titulo
+          : tituloDe(registoAtual.find((m) => m.autor === "aluno")?.texto ?? "Conversa");
+      const nova = await guardar(async (h) => {
+        const criada = await h.criarConversa({ titulo: titulo ?? "Conversa" });
+        for (const mensagem of registoAtual) await h.adicionarMensagem(criada.id, mensagem);
+        return criada;
+      });
+      if (nova) {
+        conversaAtual = nova;
+        lembrarConversaAberta(nova.id);
+      }
+    }
+    mostrarAviso("Conversa guardada outra vez.");
+  }
+  mostrarEstadoGuardar();
+  atualizarGaveta();
+}
+
+/** "Apagar o meu histórico": pede confirmação, porque não dá para anular. */
+async function pedirApagarHistorico() {
+  const quantas = ((await guardar((h) => h.listarConversas())) ?? []).length;
+  if (!quantas) return;
+  document.getElementById("dialogo-apagar-texto").textContent =
+    quantas === 1
+      ? "Vais apagar a conversa guardada neste navegador. Depois não a consegues recuperar."
+      : `Vais apagar as ${quantas} conversas guardadas neste navegador. Depois não as consegues recuperar.`;
+  dialogoApagar.returnValue = "";
+  dialogoApagar.show();
+}
+
+dialogoApagar.addEventListener("close", async () => {
+  if (dialogoApagar.returnValue !== "apagar") return;
+  try {
+    await historico.apagarHistorico();
+  } catch (erro) {
+    console.warn("Não foi possível apagar o histórico:", erro);
+    mostrarAviso("Não foi possível apagar o histórico. Tenta outra vez.");
+    return;
+  }
+  limparVista();
+  await atualizarGaveta();
+  document.getElementById("gaveta-nova").focus();
+  mostrarAviso("O teu histórico foi apagado.");
+});
+
 // ---------- Eventos ----------
 
 formulario.addEventListener("submit", (evento) => {
@@ -427,10 +527,13 @@ document.getElementById("nova-conversa").addEventListener("click", novaConversa)
 document.getElementById("gaveta-nova").addEventListener("click", novaConversa);
 document.getElementById("gaveta-nova-icone").addEventListener("click", novaConversa);
 alternarGaveta.addEventListener("click", alternarAGaveta);
+interruptorGuardar.addEventListener("change", mudarGuardar);
+botaoApagarHistorico.addEventListener("click", pedirApagarHistorico);
 abrirGaveta.addEventListener("click", abrirAGaveta);
 gavetaScrim.addEventListener("click", () => fecharGaveta());
 document.addEventListener("keydown", (evento) => {
-  if (evento.key === "Escape" && gavetaAberta) fecharGaveta();
+  // Com o diálogo de confirmação aberto, o Esc fecha só o diálogo (a gaveta fica aberta por baixo)
+  if (evento.key === "Escape" && gavetaAberta && !dialogoApagar.open) fecharGaveta();
 });
 ecraGrande.addEventListener("change", () => {
   gavetaAberta = false;
@@ -452,6 +555,12 @@ conversa.addEventListener("scroll", () => {
 async function iniciarHistorico() {
   historico = await abrirHistorico();
   pedirArmazenamentoPersistente();
+  // Se o navegador não deixa guardar (ex.: alguns modos privados), o aluno tem de saber (G2, G16)
+  if (historico.modo === "memoria") {
+    document.getElementById("gaveta-nota").textContent =
+      "Este navegador não deixa guardar conversas: desaparecem quando fechares a página.";
+    document.getElementById("opcao-guardar").hidden = true;
+  }
   try {
     localStorage.removeItem(CHAVE_CONVERSA_ABERTA); // chave antiga da Fase 3.3, já não é usada
   } catch {
