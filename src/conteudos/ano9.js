@@ -12,7 +12,7 @@ export const TEMAS_9 = [
     tema: "Movimentos e Forças",
     subtema: "Movimentos na Terra",
     palavras: ["movimento", "referencial", "repouso", "trajetoria", "rapidez", "distancia percorrida", "velocidade media", "posicao-tempo", "velocidade-tempo", "grafico posicao", "grafico velocidade", "grafico de posicao", "grafico de velocidade", "aceleracao", "uniforme", "acelerado", "retardado"],
-    explicacao: `Para dizer se um corpo está em **movimento** ou em **repouso** precisamos de um **referencial**. Estes conceitos são relativos: quem vai sentado no autocarro está em repouso em relação ao banco, mas em movimento em relação à estrada.
+    explicacao: `Para dizer se um corpo está em **movimento** ou em **repouso** precisamos de um **referencial**. Estes conceitos são relativos: uma pessoa sentada no autocarro está em repouso em relação ao banco, mas em movimento em relação à estrada.
 
 • **Trajetória**: o caminho descrito pelo corpo.
 • **Rapidez média = distância percorrida ÷ tempo**, em metros por segundo (m/s).
@@ -42,7 +42,7 @@ Os movimentos retilíneos analisam-se com gráficos:
         explicacao: "Quando a velocidade diminui, o movimento é retardado.",
       },
       {
-        pergunta: "Estás sentado num comboio em andamento. Em relação a quê estás em repouso?",
+        pergunta: "Viajas num comboio em andamento, sem te levantares do banco. Em relação a quê estás em repouso?",
         opcoes: ["À estação", "Ao teu banco", "Às árvores lá fora", "À linha do comboio"],
         certa: 1,
         explicacao: "Em relação ao banco, a tua posição não muda. Em relação à estação, estás em movimento.",
