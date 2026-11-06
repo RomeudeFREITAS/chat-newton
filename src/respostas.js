@@ -9,8 +9,16 @@ import { CONVERSA, DESCONHECIDA, SITUACOES } from "./conteudos/situacoes.js";
 
 export const TEMAS = [...TEMAS_7, ...TEMAS_8, ...TEMAS_9];
 
-// Temas mostrados no ecrã de boas-vindas e quando o Newton não percebe a pergunta.
+// Temas mostrados no ecrã de boas-vindas e quando o Newton não percebe a pergunta,
+// para quem ainda não disse o ano.
 export const TEMAS_INICIAIS = ["sistema-solar", "misturas", "densidade", "acidos", "som", "forcas"];
+
+// Os mesmos temas, escolhidos para cada ano (Fase 4): seis por ano, a cobrir todos os domínios das AE.
+export const TEMAS_POR_ANO = {
+  7: ["sistema-solar", "terra-lua", "misturas", "mudancas", "densidade", "energia"],
+  8: ["atomos", "reacoes", "acidos", "som", "luz", "fenomenos-oticos"],
+  9: ["movimentos", "forcas", "arquimedes", "eletricidade", "estrutura-atomica", "ligacao"],
+};
 
 export const temaPorId = (id) => TEMAS.find((t) => t.id === id);
 
@@ -33,12 +41,13 @@ function temasProvaveis(texto) {
 }
 
 /**
- * Escolhe a resposta para a pergunta do aluno. Devolve um de três tipos:
+ * Escolhe a resposta para a pergunta do aluno. `iniciais` são os temas a sugerir quando o Newton
+ * não percebe (os do ano do aluno, se o souber). Devolve um de três tipos:
  *   { tipo: "tema", tema }                      explicação de um tema
  *   { tipo: "ambigua", temas, texto }           a pergunta encaixa em dois temas: o Newton pergunta qual (G10)
  *   { tipo: "mensagem", texto, seguintes }      situação sensível, conversa ou pergunta desconhecida
  */
-export function responder(pergunta) {
+export function responder(pergunta, iniciais = TEMAS_INICIAIS) {
   const texto = normalizar(pergunta);
   const original = pergunta.toLowerCase();
   const provaveis = temasProvaveis(texto);
@@ -49,8 +58,8 @@ export function responder(pergunta) {
   );
   if (situacao) {
     let seguintes = situacao.seguintes;
-    if (seguintes === "temas") seguintes = TEMAS_INICIAIS;
-    if (seguintes === "tema") seguintes = provaveis.length ? [provaveis[0].tema.id] : TEMAS_INICIAIS;
+    if (seguintes === "temas") seguintes = iniciais;
+    if (seguintes === "tema") seguintes = provaveis.length ? [provaveis[0].tema.id] : iniciais;
     return { tipo: "mensagem", texto: situacao.texto, seguintes, situacao: situacao.codigo };
   }
 
@@ -72,5 +81,5 @@ export function responder(pergunta) {
   if (conversa) return { tipo: "mensagem", texto: conversa.texto, seguintes: [] };
 
   // 4. Não percebeu: admite e mostra os temas (G10)
-  return { tipo: "mensagem", texto: DESCONHECIDA, seguintes: TEMAS_INICIAIS };
+  return { tipo: "mensagem", texto: DESCONHECIDA, seguintes: iniciais };
 }

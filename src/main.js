@@ -1,5 +1,7 @@
 // Chat do Newton (sem IA): o aluno pergunta, o Newton responde com respostas pré-definidas.
+import "@material/web/button/filled-button.js";
 import "@material/web/button/filled-tonal-button.js";
+import "@material/web/button/outlined-button.js";
 import "@material/web/button/text-button.js";
 import "@material/web/dialog/dialog.js";
 import "@material/web/switch/switch.js";
@@ -17,7 +19,7 @@ import { mostrarAviso } from "./aviso.js";
 import { abrirHistorico, pedirArmazenamentoPersistente } from "./dados/historico.js";
 import { desenharLista } from "./gaveta.js";
 import { icone, preencherIcones } from "./icones.js";
-import { responder, temaPorId, TEMAS_INICIAIS } from "./respostas.js";
+import { responder, temaPorId, TEMAS_INICIAIS, TEMAS_POR_ANO } from "./respostas.js";
 import "./styles/tema-cores.css";
 import "./styles/tokens.css";
 import "./styles/base.css";
@@ -39,9 +41,18 @@ const interruptorGuardar = document.getElementById("guardar-conversa");
 const estadoTemporaria = document.getElementById("estado-temporaria");
 const botaoApagarHistorico = document.getElementById("apagar-historico");
 const dialogoApagar = document.getElementById("dialogo-apagar");
+const onboarding = document.getElementById("onboarding");
+const passoOla = document.getElementById("passo-ola");
+const passoAno = document.getElementById("passo-ano");
+const botaoContinuar = document.getElementById("continuar");
 
 const reduzirMovimento = matchMedia("(prefers-reduced-motion: reduce)");
 let ocupado = false;
+
+// ---------- Perfil: o ano do aluno (Fase 4) ----------
+
+let anoAluno = null;
+const temasIniciais = () => TEMAS_POR_ANO[anoAluno] ?? TEMAS_INICIAIS;
 
 // ---------- Histórico (guardado no navegador: Fase 3) ----------
 
@@ -193,6 +204,7 @@ async function perguntar(texto, idTema) {
 
   ocupado = true;
   atualizarEnviar();
+  botaoContinuar.hidden = true;
   adicionar(mensagemAluno(pergunta));
   registoAtual.push({ autor: "aluno", texto: pergunta });
   const minhaVista = vista;
@@ -210,7 +222,8 @@ async function perguntar(texto, idTema) {
     atualizarGaveta();
   }
 
-  const resposta = idTema && temaPorId(idTema) ? { tipo: "tema", tema: temaPorId(idTema) } : responder(pergunta);
+  const resposta =
+    idTema && temaPorId(idTema) ? { tipo: "tema", tema: temaPorId(idTema) } : responder(pergunta, temasIniciais());
 
   // O que mostrar: a explicação de um tema, a pergunta "qual dos temas?" (G10) ou uma mensagem.
   let textoResposta = resposta.texto;
@@ -292,6 +305,7 @@ function novaConversa() {
 /** Mostra uma conversa guardada (sem animação: já foi lida). */
 function mostrarConversa({ conversa: dados, mensagens: lista }) {
   vista++;
+  botaoContinuar.hidden = true;
   conversaAtual = dados;
   conversaTemporaria = false;
   mostrarEstadoGuardar();
@@ -438,6 +452,69 @@ async function apagarConversa(id) {
   });
 }
 
+// ---------- Primeira visita e ano do aluno (Fase 4: G1, G2, G3, G12) ----------
+
+let aMudarAno = false;
+
+/** Ecrã de boas-vindas com os temas do ano do aluno (ou os temas iniciais, se ainda não o disse). */
+function desenharBoasVindas(titulo) {
+  if (titulo) document.getElementById("boas-vindas-titulo").textContent = titulo;
+  document.getElementById("boas-vindas-texto").textContent = anoAluno
+    ? `Estou aqui para te ajudar a estudar Físico\u2011Química. Escolhe um tema do ${anoAluno}.º ano ou escreve a tua dúvida.`
+    : "Estou aqui para te ajudar a estudar Físico\u2011Química. Escolhe um tema ou escreve a tua dúvida.";
+  const chips = criarChips(temasIniciais(), anoAluno ? `Temas do ${anoAluno}.º ano` : "Temas para começar");
+  chips.id = "temas-iniciais";
+  document.getElementById("temas-iniciais").replaceWith(chips);
+
+  document.getElementById("opcao-ano").hidden = !anoAluno;
+  document.getElementById("gaveta-ano").textContent = `O teu ano: ${anoAluno}.º`;
+}
+
+/** Mostra um passo da primeira visita. Também serve para mudar de ano (só o segundo passo). */
+function mostrarOnboarding(passo, { mudarAno = false } = {}) {
+  aMudarAno = mudarAno;
+  document.body.classList.add("em-onboarding");
+  onboarding.hidden = false;
+  passoOla.hidden = passo !== "ola";
+  passoAno.hidden = passo !== "ano";
+  document.getElementById("contador-ano").hidden = mudarAno;
+  document.getElementById("onboarding-voltar").textContent = mudarAno ? "Cancelar" : "Voltar";
+  // Enquanto o aluno escolhe, a gaveta e o "Nova conversa" ficam inativos
+  gaveta.inert = true;
+  document.getElementById("nova-conversa").inert = true;
+  conversa.scrollTo({ top: 0 });
+  (passo === "ola" ? document.getElementById("onboarding-titulo") : document.getElementById("titulo-ano")).focus();
+}
+
+function fecharOnboarding() {
+  document.body.classList.remove("em-onboarding");
+  onboarding.hidden = true;
+  document.getElementById("nova-conversa").inert = false;
+  aplicarEstadoGaveta();
+}
+
+async function escolherAno(ano) {
+  const mudou = aMudarAno;
+  anoAluno = ano;
+  await guardar((h) => h.atualizarPerfil({ ano }));
+  fecharOnboarding();
+  desenharBoasVindas(mudou ? null : "Pronto! Por onde começamos?");
+  if (mudou) mostrarAviso(`Agora mostro-te os temas do ${ano}.º ano.`);
+  if (mensagens.children.length) campo.focus();
+  else document.getElementById("boas-vindas-titulo").focus();
+}
+
+/** Quem volta vê "Olá de novo!" e um atalho para a última conversa (G12). */
+async function mostrarRegresso() {
+  desenharBoasVindas("Olá de novo!");
+  if (conversaAtual) return;
+  const ultima = await guardar((h) => h.ultimaConversa());
+  if (!ultima) return;
+  botaoContinuar.textContent = `Continuar: ${ultima.titulo}`;
+  botaoContinuar.onclick = () => abrirConversa(ultima.id);
+  botaoContinuar.hidden = false;
+}
+
 // ---------- Controlo dos dados (G16, G17) ----------
 
 /** "Guardar esta conversa": desligar tira-a do histórico (fica no ecrã); ligar volta a guardá-la. */
@@ -529,6 +606,22 @@ document.getElementById("gaveta-nova-icone").addEventListener("click", novaConve
 alternarGaveta.addEventListener("click", alternarAGaveta);
 interruptorGuardar.addEventListener("change", mudarGuardar);
 botaoApagarHistorico.addEventListener("click", pedirApagarHistorico);
+document.getElementById("onboarding-seguinte").addEventListener("click", () => mostrarOnboarding("ano"));
+document.getElementById("onboarding-voltar").addEventListener("click", () => {
+  if (aMudarAno) {
+    fecharOnboarding();
+    document.getElementById("boas-vindas-titulo").focus();
+  } else {
+    mostrarOnboarding("ola");
+  }
+});
+for (const botao of document.querySelectorAll("[data-ano]")) {
+  botao.addEventListener("click", () => escolherAno(Number(botao.dataset.ano)));
+}
+document.getElementById("mudar-ano").addEventListener("click", () => {
+  fecharGaveta({ devolverFoco: false });
+  mostrarOnboarding("ano", { mudarAno: true });
+});
 abrirGaveta.addEventListener("click", abrirAGaveta);
 gavetaScrim.addEventListener("click", () => fecharGaveta());
 document.addEventListener("keydown", (evento) => {
@@ -576,9 +669,25 @@ async function iniciarHistorico() {
     console.warn("Não foi possível retomar a conversa:", erro);
   }
   await atualizarGaveta();
+
+  // Primeira visita: o aluno ainda não disse o ano (Fase 4)
+  try {
+    anoAluno = (await historico.obterPerfil()).ano ?? null;
+  } catch (erro) {
+    console.warn("Não foi possível ler o perfil:", erro);
+  }
+  // A página aparece antes de pôr o foco: um elemento escondido não recebe foco
+  document.body.classList.remove("a-carregar");
+  if (anoAluno) await mostrarRegresso();
+  else {
+    desenharBoasVindas();
+    mostrarOnboarding("ola");
+  }
 }
 
-const historicoPronto = iniciarHistorico();
-
 preencherIcones();
-document.getElementById("temas-iniciais").replaceWith(criarChips(TEMAS_INICIAIS, "Temas para começar"));
+desenharBoasVindas();
+// Aconteça o que acontecer ao histórico, a página tem de aparecer e o chat tem de funcionar
+const historicoPronto = iniciarHistorico()
+  .catch((erro) => console.warn("Não foi possível iniciar o histórico:", erro))
+  .finally(() => document.body.classList.remove("a-carregar"));

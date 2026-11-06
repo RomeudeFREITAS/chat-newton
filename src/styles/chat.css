@@ -87,6 +87,75 @@ body {
   --md-icon-size: 20px;
 }
 
+/* Enquanto o Newton vê se o aluno já disse o ano, nada aparece (evita mostrar o ecrã errado por um instante) */
+.a-carregar .conversa .coluna,
+.a-carregar .compositor {
+  visibility: hidden;
+}
+
+.boas-vindas__continuar {
+  max-width: 100%;
+}
+
+/* ---------- Primeira visita (Fase 4) ---------- */
+
+.onboarding__passo {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  padding: 40px 0 32px;
+  text-align: center;
+}
+
+.onboarding__passo > p {
+  max-width: 40ch;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.onboarding__contador {
+  color: var(--md-sys-color-primary);
+}
+
+.onboarding__passo h2:focus {
+  outline: none;
+}
+
+.onboarding__lista {
+  display: grid;
+  gap: 8px;
+  max-width: 44ch;
+  margin: 0;
+  padding: 16px 16px 16px 36px;
+  border-radius: var(--md-sys-shape-corner-large);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  text-align: left;
+}
+
+.onboarding__botao,
+.onboarding__anos md-outlined-button {
+  --md-filled-button-container-height: 48px;
+  --md-outlined-button-container-height: 48px;
+  min-width: 200px;
+}
+
+.onboarding__anos {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 280px);
+}
+
+/* Durante a primeira visita (ou ao mudar de ano) só se vê o passo atual */
+.em-onboarding .boas-vindas,
+.em-onboarding .mensagens,
+.em-onboarding .compositor {
+  display: none;
+}
+
+.boas-vindas h2:focus {
+  outline: none;
+}
+
 /* ---------- Mensagens ---------- */
 
 .mensagens {
@@ -364,10 +433,6 @@ body {
   padding-inline: 12px 4px;
   color: var(--md-sys-color-on-surface);
   cursor: pointer;
-}
-
-.gaveta__opcao[hidden] {
-  display: none;
 }
 
 .gaveta__apagar-tudo {

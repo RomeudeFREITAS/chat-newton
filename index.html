@@ -8,7 +8,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <script type="module" src="/src/main.js"></script>
   </head>
-  <body>
+  <body class="a-carregar">
     <aside class="gaveta" id="gaveta" aria-labelledby="gaveta-titulo">
       <div class="gaveta__topo">
         <div class="gaveta__cabecalho">
@@ -41,6 +41,10 @@
 
       <!-- Controlo dos dados (Guidelines G16, G17, P16) -->
       <div class="gaveta__rodape">
+        <div class="gaveta__opcao md-typescale-label-large" id="opcao-ano" hidden>
+          <span id="gaveta-ano">O teu ano</span>
+          <md-text-button id="mudar-ano" aria-label="Mudar de ano">Mudar</md-text-button>
+        </div>
         <label class="gaveta__opcao md-typescale-label-large" id="opcao-guardar">
           Guardar esta conversa
           <md-switch id="guardar-conversa" selected></md-switch>
@@ -82,12 +86,50 @@
 
     <main class="conversa" id="conversa">
       <div class="coluna">
+        <!-- Primeira visita (Fase 4): dois passos, só aparecem enquanto o aluno não disse o ano -->
+        <section class="onboarding" id="onboarding" aria-labelledby="onboarding-titulo" hidden>
+          <div class="onboarding__passo" id="passo-ola">
+            <span class="avatar avatar--grande" aria-hidden="true"><md-icon data-icone="science"></md-icon></span>
+            <p class="md-typescale-label-large onboarding__contador">1 de 2</p>
+            <h2 id="onboarding-titulo" class="md-typescale-headline-small" tabindex="-1">Olá! Sou o Newton.</h2>
+            <p class="md-typescale-body-large">
+              Ajudo-te a estudar Físico&#8209;Química do 7.º ao 9.º ano: explico a matéria com exemplos do dia a dia
+              e tiro as tuas dúvidas.
+            </p>
+            <ul class="onboarding__lista md-typescale-body-medium">
+              <li>Não faço os trabalhos por ti, mas ajudo-te a percebê-los.</li>
+              <li id="onboarding-quem">
+                Não sou uma pessoa nem um professor. As respostas foram preparadas para ti, mas ainda não foram
+                revistas por um professor.
+              </li>
+              <li>Não preciso do teu nome nem do teu email.</li>
+            </ul>
+            <md-filled-button id="onboarding-seguinte" class="onboarding__botao">Vamos lá</md-filled-button>
+          </div>
+
+          <div class="onboarding__passo" id="passo-ano" hidden>
+            <p class="md-typescale-label-large onboarding__contador" id="contador-ano">2 de 2</p>
+            <h2 id="titulo-ano" class="md-typescale-headline-small" tabindex="-1">Em que ano estás?</h2>
+            <p class="md-typescale-body-large">
+              Assim mostro-te os temas do teu ano. Podes mudar quando quiseres, no menu das conversas.
+            </p>
+            <div class="onboarding__anos" role="group" aria-labelledby="titulo-ano">
+              <md-outlined-button data-ano="7">7.º ano</md-outlined-button>
+              <md-outlined-button data-ano="8">8.º ano</md-outlined-button>
+              <md-outlined-button data-ano="9">9.º ano</md-outlined-button>
+            </div>
+            <md-text-button id="onboarding-voltar">Voltar</md-text-button>
+          </div>
+        </section>
+
         <section class="boas-vindas" aria-labelledby="boas-vindas-titulo">
           <span class="avatar avatar--grande" aria-hidden="true"><md-icon data-icone="science"></md-icon></span>
-          <h2 id="boas-vindas-titulo" class="md-typescale-headline-small">Olá! Sou o Newton.</h2>
-          <p class="md-typescale-body-large">
+          <h2 id="boas-vindas-titulo" class="md-typescale-headline-small" tabindex="-1">Olá! Sou o Newton.</h2>
+          <p class="md-typescale-body-large" id="boas-vindas-texto">
             Estou aqui para te ajudar a estudar Físico&#8209;Química. Escolhe um tema ou escreve a tua dúvida.
           </p>
+          <!-- Quem volta: atalho para a última conversa (G12) -->
+          <md-filled-tonal-button id="continuar" class="boas-vindas__continuar" hidden></md-filled-tonal-button>
           <md-chip-set id="temas-iniciais" aria-label="Temas para começar"></md-chip-set>
         </section>
 
