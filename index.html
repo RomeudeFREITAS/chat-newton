@@ -3,174 +3,171 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="description" content="Newton, o teu ajudante para estudar Físico-Química." />
-    <title>Newton</title>
+    <meta
+      name="description"
+      content="Newton, o teu colega de estudo de Físico-Química do 7.º ao 9.º ano, com IA. Sem conta, sem email."
+    />
+    <title>Newton · O teu colega de estudo de Físico-Química</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <script type="module" src="/src/main.js"></script>
+    <script>
+      // Quem já usou o Newton neste navegador vai direto para o chat. "?sobre" mostra sempre esta página.
+      try {
+        if (localStorage.getItem("newton:ja-usou") === "sim" && !new URLSearchParams(location.search).has("sobre")) {
+          location.replace("chat/");
+        }
+      } catch {
+        // sem localStorage, a página aparece normalmente
+      }
+    </script>
+    <script type="module" src="/src/landing.js"></script>
   </head>
-  <body class="a-carregar">
-    <aside class="gaveta" id="gaveta" aria-labelledby="gaveta-titulo">
-      <div class="gaveta__topo">
-        <div class="gaveta__cabecalho">
-          <md-icon-button
-            id="alternar-gaveta"
-            class="gaveta__alternar"
-            aria-label="Recolher o menu lateral"
-            title="Recolher o menu lateral"
-            aria-controls="gaveta"
-            aria-expanded="true"
-          >
-            <md-icon data-icone="menu"></md-icon>
-          </md-icon-button>
-          <h2 id="gaveta-titulo" class="md-typescale-title-small gaveta__titulo">As tuas conversas</h2>
-        </div>
-        <md-filled-tonal-button id="gaveta-nova" class="gaveta__nova">
-          <md-icon slot="icon" data-icone="edit_square"></md-icon>
-          Nova conversa
-        </md-filled-tonal-button>
-        <md-filled-tonal-icon-button
-          id="gaveta-nova-icone"
-          class="gaveta__nova-icone"
-          aria-label="Nova conversa"
-          title="Nova conversa"
-        >
-          <md-icon data-icone="edit_square"></md-icon>
-        </md-filled-tonal-icon-button>
+  <body>
+    <header class="topo">
+      <div class="topo__interior">
+        <a class="marca" href="./?sobre" aria-label="Newton, página inicial">
+          <span class="avatar" aria-hidden="true"><md-icon data-icone="science"></md-icon></span>
+          <span class="md-typescale-title-large">Newton</span>
+          <span class="etiqueta-prototipo md-typescale-label-small">Protótipo</span>
+        </a>
+        <a class="botao botao--contorno md-typescale-label-large" href="chat/">Experimentar</a>
       </div>
-      <nav class="gaveta__lista" id="gaveta-lista" aria-label="Conversas guardadas"></nav>
-
-      <!-- Controlo dos dados (Guidelines G16, G17, P16) -->
-      <div class="gaveta__rodape">
-        <div class="gaveta__opcao md-typescale-label-large" id="opcao-ano" hidden>
-          <span id="gaveta-ano">O teu ano</span>
-          <md-text-button id="mudar-ano" aria-label="Mudar de ano">Mudar</md-text-button>
-        </div>
-        <label class="gaveta__opcao md-typescale-label-large" id="opcao-guardar">
-          Guardar esta conversa
-          <md-switch id="guardar-conversa" selected></md-switch>
-        </label>
-        <md-text-button id="apagar-historico" class="gaveta__apagar-tudo">
-          <md-icon slot="icon" data-icone="delete"></md-icon>
-          Apagar o meu histórico
-        </md-text-button>
-        <p class="gaveta__nota md-typescale-body-small" id="gaveta-nota">
-          As tuas conversas ficam só neste navegador: não são enviadas para lado nenhum. Num computador partilhado,
-          quem usar este navegador também as consegue ver.
-        </p>
-      </div>
-    </aside>
-    <div class="gaveta-scrim" id="gaveta-scrim"></div>
-
-    <header class="app-bar" id="app-bar">
-      <md-icon-button
-        id="abrir-gaveta"
-        class="app-bar__menu"
-        aria-label="Abrir as tuas conversas"
-        title="As tuas conversas"
-        aria-controls="gaveta"
-        aria-expanded="false"
-      >
-        <md-icon data-icone="menu"></md-icon>
-      </md-icon-button>
-      <span class="avatar" aria-hidden="true"><md-icon data-icone="science"></md-icon></span>
-      <div class="app-bar__texto">
-        <h1 class="md-typescale-title-large app-bar__titulo">
-          Newton <span class="etiqueta-prototipo md-typescale-label-small">Protótipo</span>
-        </h1>
-        <p class="md-typescale-body-medium app-bar__sub">O teu ajudante de Físico-Química</p>
-      </div>
-      <md-icon-button id="nova-conversa" aria-label="Nova conversa" title="Nova conversa">
-        <md-icon data-icone="edit_square"></md-icon>
-      </md-icon-button>
     </header>
 
-    <main class="conversa" id="conversa">
-      <div class="coluna">
-        <!-- Primeira visita (Fase 4): dois passos, só aparecem enquanto o aluno não disse o ano -->
-        <section class="onboarding" id="onboarding" aria-labelledby="onboarding-titulo" hidden>
-          <div class="onboarding__passo" id="passo-ola">
-            <span class="avatar avatar--grande" aria-hidden="true"><md-icon data-icone="science"></md-icon></span>
-            <p class="md-typescale-label-large onboarding__contador">1 de 2</p>
-            <h2 id="onboarding-titulo" class="md-typescale-headline-small" tabindex="-1">Olá! Sou o Newton.</h2>
-            <p class="md-typescale-body-large">
-              Ajudo-te a estudar Físico&#8209;Química do 7.º ao 9.º ano: explico a matéria com exemplos do dia a dia
-              e tiro as tuas dúvidas.
+    <main>
+      <!-- Para quem é e o que faz -->
+      <section class="banda heroi" aria-labelledby="titulo">
+        <div class="interior heroi__grelha">
+          <div class="heroi__texto">
+            <p class="eyebrow md-typescale-label-large">Físico-Química · 7.º, 8.º e 9.º ano</p>
+            <h1 id="titulo" class="md-typescale-display-small">O teu colega de estudo de Físico&#8209;Química.</h1>
+            <p class="md-typescale-body-large heroi__lead">
+              Explica a matéria ao nível do teu ano, com exemplos do dia a dia, e ajuda-te a perceber os exercícios
+              passo a passo. Sem conta e sem email.
             </p>
-            <ul class="onboarding__lista md-typescale-body-medium">
-              <li>Não faço os trabalhos por ti, mas ajudo-te a percebê-los.</li>
-              <li id="onboarding-quem">
-                Sou uma IA, não uma pessoa nem um professor. Posso enganar-me: confirma o que for importante no
-                manual ou com o teu professor.
-              </li>
-              <li>Não preciso do teu nome nem do teu email.</li>
-            </ul>
-            <md-filled-button id="onboarding-seguinte" class="onboarding__botao">Vamos lá</md-filled-button>
-          </div>
-
-          <div class="onboarding__passo" id="passo-ano" hidden>
-            <p class="md-typescale-label-large onboarding__contador" id="contador-ano">2 de 2</p>
-            <h2 id="titulo-ano" class="md-typescale-headline-small" tabindex="-1">Em que ano estás?</h2>
-            <p class="md-typescale-body-large">
-              Assim mostro-te os temas do teu ano. Podes mudar quando quiseres, no menu das conversas.
-            </p>
-            <div class="onboarding__anos" role="group" aria-labelledby="titulo-ano">
-              <md-outlined-button data-ano="7">7.º ano</md-outlined-button>
-              <md-outlined-button data-ano="8">8.º ano</md-outlined-button>
-              <md-outlined-button data-ano="9">9.º ano</md-outlined-button>
+            <div class="acoes">
+              <a class="botao botao--cheio md-typescale-label-large" href="chat/">Experimentar</a>
+              <a class="botao botao--texto md-typescale-label-large" href="#como">Como funciona</a>
             </div>
-            <md-text-button id="onboarding-voltar">Voltar</md-text-button>
           </div>
-        </section>
 
-        <section class="boas-vindas" aria-labelledby="boas-vindas-titulo">
-          <span class="avatar avatar--grande" aria-hidden="true"><md-icon data-icone="science"></md-icon></span>
-          <h2 id="boas-vindas-titulo" class="md-typescale-headline-small" tabindex="-1">Olá! Sou o Newton.</h2>
-          <p class="md-typescale-body-large" id="boas-vindas-texto">
-            Estou aqui para te ajudar a estudar Físico&#8209;Química. Escolhe um tema ou escreve a tua dúvida.
-          </p>
-          <!-- Quem volta: atalho para a última conversa (G12) -->
-          <md-filled-tonal-button id="continuar" class="boas-vindas__continuar" hidden></md-filled-tonal-button>
-          <md-chip-set id="temas-iniciais" aria-label="Temas para começar"></md-chip-set>
-        </section>
+          <figure class="exemplo" aria-label="Exemplo de uma conversa com o Newton">
+            <div class="exemplo__conversa">
+              <p class="bubble bubble--aluno md-typescale-body-large">Porque é que um barco flutua?</p>
+              <div class="exemplo__newton">
+                <span class="avatar avatar--pequeno" aria-hidden="true"><md-icon data-icone="science"></md-icon></span>
+                <div class="exemplo__corpo">
+                  <p class="bubble bubble--newton md-typescale-body-large">
+                    Por causa da <strong>massa volúmica</strong>. O barco é cavado e tem muito ar por dentro, por isso,
+                    no conjunto, é menos denso do que a água.<br /><br />Se entrasse água no barco, o que achas que
+                    acontecia?
+                  </p>
+                  <p class="exemplo__acoes md-typescale-label-medium" aria-hidden="true">
+                    <span>Mais simples</span><span>Dá-me um exemplo</span><span>De onde vem isto?</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <figcaption class="md-typescale-body-small">Exemplo de uma resposta, ao nível do 7.º ano.</figcaption>
+          </figure>
+        </div>
+      </section>
 
-        <div class="mensagens" id="mensagens" role="log" aria-live="polite" aria-label="Conversa com o Newton"></div>
-      </div>
+      <!-- O que faz -->
+      <section class="banda" id="como" aria-labelledby="t-faz">
+        <div class="interior">
+          <h2 id="t-faz" class="md-typescale-headline-medium">O que o Newton faz</h2>
+          <div class="cartoes">
+            <article class="cartao">
+              <h3 class="md-typescale-title-medium">Fala ao nível do teu ano</h3>
+              <p class="md-typescale-body-medium">
+                31 temas do 7.º ao 9.º ano, alinhados com as Aprendizagens Essenciais de março de 2026.
+              </p>
+            </article>
+            <article class="cartao">
+              <h3 class="md-typescale-title-medium">Ajuda-te a perceber</h3>
+              <p class="md-typescale-body-medium">
+                Não dá a resposta feita: guia-te passo a passo e termina com uma pergunta para veres se percebeste.
+              </p>
+            </article>
+            <article class="cartao">
+              <h3 class="md-typescale-title-medium">Corriges com um toque</h3>
+              <p class="md-typescale-body-medium">
+                "Mais simples", "Dá-me um exemplo" ou "Explica de outra forma". E dizes se a resposta ajudou.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- O que não faz (G1, G2) -->
+      <section class="banda banda--suave" aria-labelledby="t-nao-faz">
+        <div class="interior duas-colunas">
+          <h2 id="t-nao-faz" class="md-typescale-headline-medium">E o que não faz</h2>
+          <ul class="lista md-typescale-body-large">
+            <li><strong>Não faz os trabalhos por ti.</strong> Ajuda-te a chegar lá.</li>
+            <li>
+              <strong>Não é uma pessoa nem um professor.</strong> É uma IA e pode enganar-se, por isso diz de onde vem
+              cada resposta.
+            </li>
+            <li><strong>Não pede o teu nome, email nem conta.</strong></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Privacidade em linguagem simples (P11 a P18) -->
+      <section class="banda" aria-labelledby="t-privacidade">
+        <div class="interior duas-colunas">
+          <h2 id="t-privacidade" class="md-typescale-headline-medium">A tua privacidade, em linguagem simples</h2>
+          <ul class="lista md-typescale-body-large">
+            <li>As conversas ficam <strong>só neste navegador</strong>. Não há contas nem uma base de dados com o que escreves.</li>
+            <li>Para responder, a pergunta e as últimas mensagens passam pela IA (Google Gemini). Não guardamos nada.</li>
+            <li>Podes apagar uma conversa, apagar tudo ou não guardar uma conversa, quando quiseres.</li>
+            <li>Num computador partilhado, quem usar o mesmo navegador também vê as conversas.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Para pais e professores: quem é responsável (P26, P28) -->
+      <section class="banda banda--suave" aria-labelledby="t-adultos">
+        <div class="interior duas-colunas">
+          <h2 id="t-adultos" class="md-typescale-headline-medium">Para pais e professores</h2>
+          <div class="texto-adultos md-typescale-body-large">
+            <p>
+              O Newton é o protótipo de um projeto escolar da formação Design do Futuro · UX Design para Inteligência
+              Artificial, criado por Romeu Freitas.
+            </p>
+            <ul class="lista">
+              <li>
+                Os conteúdos seguem as Aprendizagens Essenciais de Físico-Química de março de 2026, mas
+                <strong>ainda não foram revistos por um professor</strong>.
+              </li>
+              <li>
+                Em temas sensíveis, como tristeza ou bullying, o Newton responde com textos preparados e indica a Linha
+                SOS Criança (<strong>116 111</strong>). Estas respostas não passam pela IA.
+              </li>
+              <li>
+                O protótipo usa o Google Gemini no nível gratuito, só para demonstração. Um lançamento para alunos usaria
+                um serviço pago, próprio para menores.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="banda fecho" aria-labelledby="t-fecho">
+        <div class="interior fecho__interior">
+          <h2 id="t-fecho" class="md-typescale-headline-medium">Experimenta agora</h2>
+          <p class="md-typescale-body-large">Escolhe o teu ano e faz a primeira pergunta. Demora menos de um minuto.</p>
+          <a class="botao botao--cheio md-typescale-label-large" href="chat/">Experimentar o Newton</a>
+        </div>
+      </section>
     </main>
 
-    <footer class="compositor">
-      <p class="md-typescale-label-medium compositor__temporaria" id="estado-temporaria" hidden>
-        Esta conversa não está a ser guardada: desaparece quando saíres ou abrires outra.
-      </p>
-      <form class="compositor__form coluna" id="formulario">
-        <md-filled-text-field
-          id="campo"
-          class="composer-field"
-          placeholder="Escreve a tua dúvida…"
-          aria-label="Escreve a tua dúvida"
-        ></md-filled-text-field>
-        <md-filled-icon-button id="enviar" type="submit" aria-label="Enviar" disabled>
-          <md-icon data-icone="send"></md-icon>
-        </md-filled-icon-button>
-      </form>
-      <p class="md-typescale-body-small compositor__nota">
-        O Newton é uma IA e pode enganar-se. Confirma o que for importante.
-      </p>
+    <footer class="rodape md-typescale-body-small">
+      <div class="interior">
+        <p>Newton · Protótipo · Formação Design do Futuro, 2026</p>
+        <a href="https://github.com/RomeudeFREITAS/chat-newton">Código no GitHub</a>
+      </div>
     </footer>
-
-    <div class="avisos" id="avisos" role="status" aria-live="polite"></div>
-
-    <!-- Camada própria: o fundo escurecido do diálogo tem de ficar por cima da gaveta e da barra superior -->
-    <div class="camada-dialogos">
-      <md-dialog id="dialogo-apagar" type="alert">
-        <div slot="headline">Apagar todas as conversas?</div>
-        <form slot="content" id="form-apagar" method="dialog">
-          <span id="dialogo-apagar-texto">Vais apagar as conversas guardadas neste navegador. Depois não as consegues recuperar.</span>
-        </form>
-        <div slot="actions">
-          <md-text-button form="form-apagar" value="cancelar" autofocus>Cancelar</md-text-button>
-          <md-text-button form="form-apagar" value="apagar" class="botao-perigo">Apagar tudo</md-text-button>
-        </div>
-      </md-dialog>
-    </div>
   </body>
 </html>

@@ -13,7 +13,7 @@ export async function pedirIA({ mensagens, ano, temaId }) {
   const controlo = new AbortController();
   const temporizador = setTimeout(() => controlo.abort(), ESPERA_MAXIMA);
   try {
-    const resposta = await fetch("api/chat", {
+    const resposta = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ mensagens, ano, temaId }),

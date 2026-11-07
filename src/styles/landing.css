@@ -1,0 +1,361 @@
+/* Landing do Newton (Fase 8). Usa os mesmos tokens M3 do chat. */
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--md-sys-color-primary);
+}
+
+a:focus-visible {
+  outline: 3px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+.interior {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-inline: 16px;
+}
+
+/* Barra superior */
+.topo {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--md-sys-color-surface);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.topo__interior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 1080px;
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 8px 16px;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--md-sys-color-on-surface);
+  text-decoration: none;
+  border-radius: var(--md-sys-shape-corner-small);
+}
+
+.avatar md-icon {
+  --md-icon-size: 22px;
+}
+
+.avatar--pequeno {
+  width: 32px;
+  height: 32px;
+}
+
+.avatar--pequeno md-icon {
+  --md-icon-size: 18px;
+}
+
+.etiqueta-prototipo {
+  padding: 2px 8px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
+/* Botões: ligações com a forma dos botões M3 (navegam para outra página) */
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border-radius: var(--md-sys-shape-corner-full);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.botao--cheio {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.botao--cheio:hover {
+  box-shadow: var(--md-sys-elevation-level1);
+  background: color-mix(in srgb, var(--md-sys-color-primary), var(--md-sys-color-on-primary) 8%);
+}
+
+.botao--contorno {
+  padding: 0 20px;
+  border: 1px solid var(--md-sys-color-outline);
+  color: var(--md-sys-color-primary);
+}
+
+.botao--contorno:hover,
+.botao--texto:hover {
+  background: color-mix(in srgb, transparent, var(--md-sys-color-primary) 8%);
+}
+
+.botao--texto {
+  padding: 0 16px;
+  color: var(--md-sys-color-primary);
+}
+
+/* Secções */
+.banda {
+  padding-block: 56px;
+}
+
+.banda--suave {
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.banda h2 {
+  margin-bottom: 24px;
+  color: var(--md-sys-color-on-surface);
+  text-wrap: balance;
+}
+
+/* Herói */
+.heroi {
+  padding-block: 48px 64px;
+}
+
+.heroi__grelha {
+  display: grid;
+  gap: 40px;
+  align-items: center;
+}
+
+.eyebrow {
+  margin-bottom: 12px;
+  color: var(--md-sys-color-primary);
+}
+
+.heroi h1 {
+  color: var(--md-sys-color-on-surface);
+  text-wrap: balance;
+}
+
+.heroi__lead {
+  max-width: 34rem;
+  margin-top: 16px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 28px;
+}
+
+/* Exemplo de conversa (estático, só para mostrar como é) */
+.exemplo {
+  margin: 0;
+  padding: 20px;
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  background: var(--md-sys-color-surface-container);
+}
+
+.exemplo__conversa {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.exemplo .bubble {
+  max-width: 90%;
+}
+
+.exemplo__newton {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.exemplo__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.exemplo__corpo .bubble {
+  max-width: 100%;
+}
+
+.exemplo strong {
+  color: var(--md-sys-color-primary);
+  font-weight: 500;
+}
+
+.exemplo__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.exemplo__acoes span {
+  padding: 6px 12px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-small);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.exemplo figcaption {
+  margin-top: 16px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Cartões "O que faz" */
+.cartoes {
+  display: grid;
+  gap: 16px;
+}
+
+.cartao {
+  padding: 24px;
+  border-radius: var(--md-sys-shape-corner-large);
+  background: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.cartao h3 {
+  margin-bottom: 8px;
+}
+
+.cartao p {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Listas de texto */
+.duas-colunas {
+  display: grid;
+  gap: 8px;
+}
+
+.lista {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding-left: 1.25em;
+}
+
+.lista li::marker {
+  color: var(--md-sys-color-primary);
+}
+
+.lista strong {
+  font-weight: 500;
+}
+
+.texto-adultos {
+  display: grid;
+  gap: 16px;
+}
+
+/* Fecho */
+.fecho__interior {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.fecho h2 {
+  margin-bottom: 0;
+}
+
+.fecho p {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Rodapé: espaço em baixo para o selo do Netlify (plano gratuito) não tapar nada */
+.rodape {
+  padding-block: 24px max(72px, calc(env(safe-area-inset-bottom) + 64px));
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.rodape .interior {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+}
+
+@media (min-width: 720px) {
+  .cartoes {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .duas-colunas {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: 40px;
+  }
+
+  .duas-colunas h2 {
+    margin-bottom: 0;
+  }
+
+  .banda {
+    padding-block: 72px;
+  }
+}
+
+@media (min-width: 960px) {
+  .heroi {
+    padding-block: 72px 88px;
+  }
+
+  .heroi__grelha {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 56px;
+  }
+
+  .heroi h1 {
+    font-size: var(--md-sys-typescale-display-medium-size);
+    line-height: var(--md-sys-typescale-display-medium-line-height);
+  }
+}
+
+/* Em ecrãs estreitos, a barra de topo aperta para caber a marca, a etiqueta e o "Experimentar" */
+@media (max-width: 400px) {
+  .topo__interior {
+    gap: 8px;
+  }
+
+  .marca {
+    gap: 8px;
+  }
+
+  .topo .botao--contorno {
+    padding: 0 14px;
+  }
+}
+
+/* Abaixo de 340 px não cabe: fica o "Experimentar" do herói, logo no primeiro ecrã */
+@media (max-width: 339px) {
+  .topo .botao--contorno {
+    display: none;
+  }
+}

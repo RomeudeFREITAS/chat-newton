@@ -718,9 +718,19 @@ function fecharOnboarding() {
   aplicarEstadoGaveta();
 }
 
+/** A landing manda quem já usou o Newton neste navegador direto para o chat (PRD, Fase 8). */
+function marcarJaUsou() {
+  try {
+    localStorage.setItem("newton:ja-usou", "sim");
+  } catch {
+    // sem localStorage, a landing aparece sempre: não faz mal
+  }
+}
+
 async function escolherAno(ano) {
   const mudou = aMudarAno;
   anoAluno = ano;
+  marcarJaUsou();
   await guardar((h) => h.atualizarPerfil({ ano }));
   fecharOnboarding();
   desenharBoasVindas(mudou ? null : "Pronto! Por onde começamos?");
@@ -903,7 +913,10 @@ async function iniciarHistorico() {
   }
   // A página aparece antes de pôr o foco: um elemento escondido não recebe foco
   document.body.classList.remove("a-carregar");
-  if (anoAluno) await mostrarRegresso();
+  if (anoAluno) {
+    marcarJaUsou();
+    await mostrarRegresso();
+  }
   else {
     desenharBoasVindas();
     mostrarOnboarding("ola");

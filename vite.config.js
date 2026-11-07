@@ -1,12 +1,12 @@
 import { existsSync } from "node:fs";
 import { defineConfig } from "vite";
 
-// O guia de estilo só existe na cópia local; a versão publicada tem apenas o chat.
-const input = { main: "index.html" };
+// Duas páginas: a landing (/) e o chat (/chat/). O guia de estilo só existe na cópia local.
+const input = { main: "index.html", chat: "chat/index.html" };
 if (existsSync("guia-de-estilo.html")) input.guia = "guia-de-estilo.html";
 
 export default defineConfig({
-  // Caminhos relativos, para funcionar em https://<utilizador>.github.io/chat-newton/
+  // Caminhos relativos: o site funciona em qualquer endereço (Netlify ou outro)
   base: "./",
   build: {
     rollupOptions: { input },
