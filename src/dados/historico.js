@@ -6,7 +6,7 @@
 // quando o aluno criar conta:
 //   perfis     { id, ano, alcunha, criadoEm }
 //   conversas  { id, perfilId, titulo, temaId, criadaEm, atualizadaEm }
-//   mensagens  { id, conversaId, ordem, autor, texto, tipo, temaId, seguintes, situacao, criadaEm }
+//   mensagens  { id, conversaId, ordem, autor, texto, tipo, temaId, seguintes, situacao, criadaEm, feedback? }
 // Datas em ISO 8601; ids em UUID.
 
 const NOME_BASE = "newton";
@@ -220,6 +220,17 @@ export async function abrirHistorico({
           await acesso.apagar("mensagens", mensagem.id);
         }
         await acesso.apagar("conversas", conversaId);
+      });
+    },
+
+    /** Guarda o 👍 / 👎 de uma resposta (G15): { voto: "ajudou" | "nao-ajudou", motivo }. Fica só no navegador. */
+    guardarFeedback(mensagemId, feedback) {
+      return executar(["mensagens"], "readwrite", async (acesso) => {
+        const mensagem = await acesso.obter("mensagens", mensagemId);
+        if (!mensagem) return null;
+        const atualizada = { ...mensagem, feedback };
+        await acesso.guardar("mensagens", atualizada);
+        return atualizada;
       });
     },
 

@@ -156,6 +156,76 @@ body {
   outline: none;
 }
 
+/* Quando a conversa começa, o ecrã de boas-vindas sai do caminho (G3, U15); volta com "Nova conversa" */
+.conversa-ativa .boas-vindas {
+  display: none;
+}
+
+.conversa-ativa .mensagens {
+  padding-top: 20px;
+}
+
+/* ---------- Ações em cada resposta (Fase 6: G9, G11, G15) ---------- */
+
+.feedback {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  max-width: 100%;
+}
+
+.acoes-resposta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 2px;
+  margin-left: -8px;
+  --md-icon-button-icon-color: var(--md-sys-color-on-surface-variant);
+  --md-icon-button-selected-icon-color: var(--md-sys-color-primary);
+  --md-icon-button-icon-size: 20px;
+}
+
+.origem {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.origem:hover {
+  background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
+}
+
+.origem:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: 0;
+}
+
+.acoes-seguintes {
+  margin-top: 8px;
+}
+
+.grupo-chips {
+  display: grid;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.grupo-chips__titulo {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.origem__texto,
+.feedback__obrigado {
+  max-width: 36rem;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
 /* ---------- Mensagens ---------- */
 
 .mensagens {
@@ -265,7 +335,7 @@ body {
 
 .compositor__nota {
   max-width: 720px;
-  margin: 6px auto 0;
+  margin: 0 auto 6px;
   padding-inline: 16px;
   text-align: center;
   color: var(--md-sys-color-on-surface-variant);
@@ -298,6 +368,13 @@ body {
   transform: none;
   visibility: visible;
   transition: transform var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+/* No telemóvel, o selo do Netlify fica no canto de baixo: o fim da gaveta ganha espaço para não ficar tapado */
+@media (max-width: 1199px) {
+  .gaveta {
+    padding-bottom: max(64px, env(safe-area-inset-bottom));
+  }
 }
 
 .gaveta-scrim {

@@ -6,6 +6,7 @@ import "@material/web/button/outlined-button.js";
 import "@material/web/button/text-button.js";
 import "@material/web/dialog/dialog.js";
 import "@material/web/switch/switch.js";
+import "@material/web/chips/assist-chip.js";
 import "@material/web/chips/chip-set.js";
 import "@material/web/chips/suggestion-chip.js";
 import "@material/web/icon/icon.js";
@@ -102,7 +103,11 @@ async function guardar(operacao) {
   }
 }
 
-const tituloDe = (texto) => (texto.length > 60 ? `${texto.slice(0, 59).trimEnd()}…` : texto);
+// Título de uma conversa ainda sem tema: a hora, e nunca o que o aluno escreveu (pode ter o nome, P18).
+// Quando aparece o primeiro tema, o título passa a ser esse tema.
+const tituloProvisorio = (data = new Date()) =>
+  `Conversa das ${data.toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" })}`;
+const ehTituloProvisorio = (titulo) => /^Conversa das \d{1,2}:\d{2}$/.test(titulo ?? "");
 
 // ---------- Construção das mensagens ----------
 
@@ -176,13 +181,156 @@ function mensagemAluno(texto) {
   return linha;
 }
 
-/** Balão do Newton com as sugestões de temas por baixo. */
-function respostaNewton(texto, seguintes, tipo) {
-  const { linha, corpo } = mensagemNewton(formatar(texto));
-  if (seguintes?.length) {
-    corpo.append(criarChips(seguintes, tipo === "ambigua" ? "Escolhe o tema" : "Continuar com outro tema"));
+// ---------- Ações em cada resposta (Fase 6) ----------
+
+// Respostas que explicam matéria (da IA ou preparadas) têm 👍 / 👎 e "De onde vem isto?"
+const TIPOS_COM_ACOES = new Set(["ia", "tema"]);
+const MOTIVOS = ["Está errado", "Não percebi", "Muito longo", "Não era isto"];
+const PEDIDOS = [
+  ["Mais simples", "Explica de forma mais simples.", "simples"],
+  ["Dá-me um exemplo", "Dá-me um exemplo do dia a dia.", "exemplo"],
+  ["Explica de outra forma", "Explica de outra forma.", "outra"],
+];
+let contadorOrigem = 0;
+
+/** "De onde vem isto?" (G11): o tema que a app enviou à IA, e que a resposta foi escrita por IA (G2). */
+function textoOrigem(registo) {
+  const tema = temaPorId(registo.temaId);
+  const onde = tema
+    ? `do tema «${tema.titulo}» · ${tema.ano}.º ano · ${tema.tema} · Aprendizagens Essenciais de março de 2026`
+    : null;
+  if (registo.tipo === "ia") {
+    return onde
+      ? `Resposta escrita por IA a partir ${onde}. Confirma no manual.`
+      : "Resposta escrita por IA, sem um tema preparado do Newton. Confirma no manual ou com o teu professor.";
+  }
+  return onde ? `Explicação preparada ${onde}. Ainda não foi revista por um professor.` : "Explicação preparada pelo Newton.";
+}
+
+/** 👍 / 👎 com motivo opcional (G15) e "De onde vem isto?" (G11). O feedback fica só no navegador. */
+function criarFeedback(registo) {
+  const zona = document.createElement("div");
+  zona.className = "feedback";
+
+  const botaoVoto = (voto, rotulo, nomeIcone) => {
+    const botao = document.createElement("md-icon-button");
+    botao.toggle = true;
+    botao.selected = registo.feedback?.voto === voto;
+    botao.setAttribute("aria-label", rotulo);
+    botao.title = rotulo;
+    botao.innerHTML = `<md-icon>${icone(nomeIcone)}</md-icon><md-icon slot="selected">${icone(`${nomeIcone}_fill`)}</md-icon>`;
+    return botao;
+  };
+  const ajudou = botaoVoto("ajudou", "Ajudou", "thumb_up");
+  const naoAjudou = botaoVoto("nao-ajudou", "Não ajudou", "thumb_down");
+
+  const idOrigem = `origem-${++contadorOrigem}`;
+  const botaoOrigem = document.createElement("button");
+  botaoOrigem.type = "button";
+  botaoOrigem.className = "origem md-typescale-label-large";
+  botaoOrigem.textContent = "De onde vem isto?";
+  botaoOrigem.setAttribute("aria-expanded", "false");
+  botaoOrigem.setAttribute("aria-controls", idOrigem);
+  const origem = document.createElement("p");
+  origem.id = idOrigem;
+  origem.className = "origem__texto md-typescale-body-small";
+  origem.textContent = textoOrigem(registo);
+  origem.hidden = true;
+  botaoOrigem.addEventListener("click", () => {
+    origem.hidden = !origem.hidden;
+    botaoOrigem.setAttribute("aria-expanded", String(!origem.hidden));
+  });
+
+  // Os motivos aparecem com um título, para não se confundirem com os outros chips
+  const motivos = document.createElement("div");
+  motivos.className = "grupo-chips";
+  motivos.innerHTML = `<p class="grupo-chips__titulo md-typescale-label-medium">O que faltou?</p>`;
+  const chipsMotivos = document.createElement("md-chip-set");
+  chipsMotivos.setAttribute("aria-label", "O que faltou?");
+  motivos.append(chipsMotivos);
+  motivos.hidden = true;
+  const obrigado = document.createElement("p");
+  obrigado.className = "feedback__obrigado md-typescale-body-small";
+  obrigado.setAttribute("role", "status");
+  obrigado.textContent = "Obrigado! Isto fica só neste navegador e ajuda a melhorar o Newton.";
+  obrigado.hidden = true;
+
+  const gravar = (feedback) => {
+    registo.feedback = feedback;
+    if (registo.id) guardar((h) => h.guardarFeedback(registo.id, feedback));
+  };
+  for (const motivo of MOTIVOS) {
+    const chip = document.createElement("md-suggestion-chip");
+    chip.label = motivo;
+    chip.addEventListener("click", () => {
+      gravar({ voto: "nao-ajudou", motivo });
+      motivos.hidden = true;
+      obrigado.hidden = false;
+    });
+    chipsMotivos.append(chip);
+  }
+  ajudou.addEventListener("change", () => {
+    naoAjudou.selected = false;
+    motivos.hidden = true;
+    obrigado.hidden = !ajudou.selected;
+    gravar(ajudou.selected ? { voto: "ajudou", motivo: null } : null);
+  });
+  naoAjudou.addEventListener("change", () => {
+    ajudou.selected = false;
+    obrigado.hidden = true;
+    motivos.hidden = !naoAjudou.selected;
+    gravar(naoAjudou.selected ? { voto: "nao-ajudou", motivo: null } : null);
+  });
+
+  const linhaAcoes = document.createElement("div");
+  linhaAcoes.className = "acoes-resposta";
+  linhaAcoes.append(ajudou, naoAjudou, botaoOrigem);
+  zona.append(linhaAcoes, origem, motivos, obrigado);
+  return zona;
+}
+
+/** "Mais simples", "Dá-me um exemplo", "Explica de outra forma" (G9): corrigir com um toque. */
+function criarPedidos() {
+  const conjunto = document.createElement("md-chip-set");
+  conjunto.className = "acoes-seguintes";
+  conjunto.setAttribute("aria-label", "Pedir outra explicação");
+  for (const [rotulo, texto, pedido] of PEDIDOS) {
+    const chip = document.createElement("md-assist-chip");
+    chip.label = rotulo;
+    chip.addEventListener("click", () => perguntar(texto, null, { pedido }));
+    conjunto.append(chip);
+  }
+  return conjunto;
+}
+
+/**
+ * Balão do Newton. As respostas que explicam matéria têm feedback e "De onde vem isto?".
+ * Só a última resposta tem os pedidos de outra explicação e os temas seguintes (no máximo 3).
+ */
+function respostaNewton(registo, { ultima = false } = {}) {
+  const { linha, corpo } = mensagemNewton(formatar(registo.texto));
+  const comAcoes = TIPOS_COM_ACOES.has(registo.tipo);
+  if (comAcoes) corpo.append(criarFeedback(registo));
+  if (ultima) {
+    if (comAcoes) corpo.append(criarPedidos());
+    const seguintes = comAcoes ? (registo.seguintes ?? []).slice(0, 3) : (registo.seguintes ?? []);
+    if (seguintes.length && comAcoes) {
+      // Depois de uma explicação, os temas seguintes têm um título que os separa dos pedidos
+      const grupo = document.createElement("div");
+      grupo.className = "grupo-chips sugestoes";
+      grupo.innerHTML = `<p class="grupo-chips__titulo md-typescale-label-medium">Outros temas</p>`;
+      grupo.append(criarChips(seguintes, "Outros temas"));
+      corpo.append(grupo);
+    } else if (seguintes.length) {
+      corpo.append(criarChips(seguintes, registo.tipo === "ambigua" ? "Escolhe o tema" : "Continuar com outro tema"));
+    }
   }
   return linha;
+}
+
+/** Tira os chips das respostas anteriores: só a última resposta tem sugestões. */
+function limparSugestoesAntigas() {
+  for (const elemento of mensagens.querySelectorAll(".sugestoes, .acoes-seguintes")) elemento.remove();
 }
 
 function indicadorEscrita() {
@@ -203,8 +351,11 @@ function adicionar(elemento) {
 
 const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/** O aluno envia uma pergunta; se vier de um chip, já sabemos o tema. */
-async function perguntar(texto, idTema) {
+/**
+ * O aluno envia uma pergunta; se vier de um chip de tema, já sabemos o tema.
+ * `pedido` ("simples", "exemplo" ou "outra") vem das ações por baixo de uma resposta (G9).
+ */
+async function perguntar(texto, idTema, { pedido = null } = {}) {
   const pergunta = texto.trim().slice(0, 300);
   if (!pergunta || ocupado) return;
 
@@ -217,9 +368,8 @@ async function perguntar(texto, idTema) {
 
   // Guardar a pergunta (a conversa só é criada na primeira mensagem; nunca, se o aluno pediu para não guardar)
   await historicoPronto;
-  const primeiraPergunta = !conversaAtual;
   if (!conversaAtual && !conversaTemporaria) {
-    conversaAtual = await guardar((h) => h.criarConversa({ titulo: tituloDe(pergunta) }));
+    conversaAtual = await guardar((h) => h.criarConversa({ titulo: tituloProvisorio() }));
     if (conversaAtual) lembrarConversaAberta(conversaAtual.id);
   }
   const idConversa = conversaAtual?.id;
@@ -247,22 +397,25 @@ async function perguntar(texto, idTema) {
   adicionar(escrita);
   const inicio = Date.now();
 
+  // O tema que serve de base de conhecimento: o da pergunta ou, numa pergunta de seguimento, o último da conversa
+  const temaBase =
+    resposta.tipo === "tema"
+      ? resposta.tema
+      : resposta.tipo === "ambigua"
+        ? resposta.temas[0]
+        : temaPorId(registoAtual.findLast((m) => m.autor === "newton" && m.temaId)?.temaId);
+
   // Perguntas escritas vão para a IA. Ficam de fora os chips de temas (já têm a explicação preparada)
   // e as situações sensíveis (S1 a S12): a segurança não depende do modelo (PRD, decisão 29).
   const situacaoSensivel = resposta.tipo === "mensagem" && resposta.situacao;
-  if (!idTema && !situacaoSensivel && !semIA) {
-    // O tema que serve de base de conhecimento: o da pergunta ou, numa pergunta de seguimento, o último da conversa
-    const temaBase =
-      resposta.tipo === "tema"
-        ? resposta.tema
-        : resposta.tipo === "ambigua"
-          ? resposta.temas[0]
-          : temaPorId(registoAtual.findLast((m) => m.autor === "newton" && m.temaId)?.temaId);
-    const ia = await pedirIA({
-      mensagens: registoAtual.slice(-10).map(({ autor, texto: t }) => ({ autor, texto: t })),
-      ano: anoAluno,
-      temaId: temaBase?.id ?? null,
-    });
+  if (!idTema && !situacaoSensivel) {
+    const ia = semIA
+      ? { erro: "sem-funcao" }
+      : await pedirIA({
+          mensagens: registoAtual.slice(-10).map(({ autor, texto: t }) => ({ autor, texto: t })),
+          ano: anoAluno,
+          temaId: temaBase?.id ?? null,
+        });
 
     if (ia.resposta) {
       textoResposta = ia.resposta;
@@ -270,15 +423,28 @@ async function perguntar(texto, idTema) {
       temaId = temaBase?.id ?? null;
       seguintes = temaBase?.seguintes ?? [];
     } else {
-      // A IA falhou: o Newton diz o que se passa e mostra a resposta preparada (U16, U17)
-      if (ia.erro === "sem-funcao") semIA = true;
-      const aviso =
-        ia.erro === "limite"
-          ? "Por agora cheguei ao limite de perguntas à IA. Tenta outra vez daqui a um minuto."
-          : "Não consegui ligar-me à IA agora.";
-      const continuacao =
-        resposta.tipo === "tema" ? "Entretanto, aqui vai a explicação preparada:" : "Entretanto, estes temas têm explicações preparadas:";
-      if (resposta.tipo !== "ambigua") {
+      // A IA falhou: o Newton diz o que se passa (só uma vez, se o site não tiver IA) e mostra o preparado (U16, U17)
+      let aviso = null;
+      if (ia.erro === "sem-funcao") {
+        if (!semIA) aviso = "Não consegui ligar-me à IA agora.";
+        semIA = true;
+      } else {
+        aviso =
+          ia.erro === "limite"
+            ? "Por agora cheguei ao limite de perguntas à IA. Tenta outra vez daqui a um minuto."
+            : "Não consegui ligar-me à IA agora.";
+      }
+
+      if (pedido && temaBase) {
+        // Pedido de outra explicação: a versão preparada do tema (PRD 7.1, G9 sem IA)
+        textoResposta = pedido === "exemplo" ? temaBase.exemplo : temaBase.simples;
+        if (aviso) textoResposta = `${aviso} Entretanto, aqui vai uma versão preparada:\n\n${textoResposta}`;
+        tipo = "tema";
+        temaId = temaBase.id;
+        seguintes = temaBase.seguintes;
+      } else if (aviso && resposta.tipo !== "ambigua") {
+        const continuacao =
+          resposta.tipo === "tema" ? "Entretanto, aqui vai a explicação preparada:" : "Entretanto, estes temas têm explicações preparadas:";
         textoResposta = `${aviso} ${continuacao}\n\n${resposta.tipo === "tema" ? textoResposta : ""}`.trim();
         if (resposta.tipo !== "tema") seguintes = temasIniciais();
       }
@@ -299,14 +465,21 @@ async function perguntar(texto, idTema) {
     situacao: resposta.situacao ?? null,
   };
   if (vista === minhaVista) {
-    adicionar(respostaNewton(textoResposta, seguintes, tipo));
+    limparSugestoesAntigas();
+    adicionar(respostaNewton(registoNewton, { ultima: true }));
     registoAtual.push(registoNewton);
   }
 
   // Guardar a resposta tal como foi mostrada; o título da conversa passa a ser o tema da primeira resposta
   if (idConversa) {
-    await guardar((h) => h.adicionarMensagem(idConversa, registoNewton));
-    if (primeiraPergunta && temaId) {
+    const guardada = await guardar((h) => h.adicionarMensagem(idConversa, registoNewton));
+    if (guardada) {
+      registoNewton.id = guardada.id;
+      // O aluno pode ter carregado em 👍 / 👎 antes de a resposta ficar guardada
+      if (registoNewton.feedback) await guardar((h) => h.guardarFeedback(guardada.id, registoNewton.feedback));
+    }
+    // Ao aparecer o primeiro tema, o título provisório passa a ser esse tema
+    if (temaId && conversaAtual?.id === idConversa && ehTituloProvisorio(conversaAtual.titulo)) {
       const renomeada = await guardar((h) => h.renomearConversa(idConversa, temaPorId(temaId).titulo));
       if (renomeada && conversaAtual?.id === idConversa) conversaAtual = renomeada;
     }
@@ -358,21 +531,24 @@ function mostrarConversa({ conversa: dados, mensagens: lista }) {
   conversaAtual = dados;
   conversaTemporaria = false;
   mostrarEstadoGuardar();
-  registoAtual = lista.map(({ autor, texto, tipo, temaId, seguintes, situacao }) => ({
+  registoAtual = lista.map(({ id, autor, texto, tipo, temaId, seguintes, situacao, feedback }) => ({
+    id,
     autor,
     texto,
     tipo,
     temaId,
     seguintes,
     situacao,
+    feedback: feedback ?? null,
   }));
   lembrarConversaAberta(dados.id);
   mensagens.replaceChildren();
-  for (const m of lista) {
-    const elemento = m.autor === "aluno" ? mensagemAluno(m.texto) : respostaNewton(m.texto, m.seguintes, m.tipo);
+  const ultimaResposta = registoAtual.findLastIndex((m) => m.autor === "newton");
+  registoAtual.forEach((m, i) => {
+    const elemento = m.autor === "aluno" ? mensagemAluno(m.texto) : respostaNewton(m, { ultima: i === ultimaResposta });
     elemento.classList.add("sem-animacao");
     mensagens.append(elemento);
-  }
+  });
   conversa.scrollTo({ top: conversa.scrollHeight });
 }
 
@@ -579,15 +755,15 @@ async function mudarGuardar() {
   } else {
     conversaTemporaria = false;
     if (registoAtual.length) {
-      // O título segue a mesma regra de sempre: o tema da primeira resposta ou, senão, a primeira pergunta
-      const primeiraResposta = registoAtual.find((m) => m.autor === "newton");
-      const titulo =
-        primeiraResposta?.tipo === "tema"
-          ? temaPorId(primeiraResposta.temaId)?.titulo
-          : tituloDe(registoAtual.find((m) => m.autor === "aluno")?.texto ?? "Conversa");
+      // O título segue a regra de sempre: o primeiro tema da conversa ou, sem tema, a hora (nunca o que o aluno escreveu)
+      const primeiroTema = temaPorId(registoAtual.find((m) => m.autor === "newton" && m.temaId)?.temaId);
       const nova = await guardar(async (h) => {
-        const criada = await h.criarConversa({ titulo: titulo ?? "Conversa" });
-        for (const mensagem of registoAtual) await h.adicionarMensagem(criada.id, mensagem);
+        const criada = await h.criarConversa({ titulo: primeiroTema?.titulo ?? tituloProvisorio() });
+        for (const mensagem of registoAtual) {
+          const guardada = await h.adicionarMensagem(criada.id, mensagem);
+          mensagem.id = guardada.id;
+          if (mensagem.feedback) await h.guardarFeedback(guardada.id, mensagem.feedback);
+        }
         return criada;
       });
       if (nova) {
@@ -733,6 +909,11 @@ async function iniciarHistorico() {
     mostrarOnboarding("ola");
   }
 }
+
+// O ecrã de boas-vindas só aparece com a conversa vazia (G3, U15)
+new MutationObserver(() => {
+  document.body.classList.toggle("conversa-ativa", mensagens.childElementCount > 0);
+}).observe(mensagens, { childList: true });
 
 preencherIcones();
 desenharBoasVindas();
