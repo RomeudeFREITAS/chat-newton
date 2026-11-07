@@ -1,6 +1,7 @@
 // Situações sensíveis e conversa (Guidelines, secção 6: S1 a S12).
 // Têm prioridade sobre os temas e estão por ordem de prioridade: a primeira que encaixa é a usada.
-// Antes da IA, o Newton nunca diz que é uma IA: diz que as respostas foram preparadas (PRD, secção 7.1).
+// Estas respostas são sempre as preparadas, mesmo com a IA ligada (PRD, decisão 29).
+// Desde a Fase 5, o Newton diz que é uma IA (Guidelines P23, G2; AI Act, art. 50.º).
 //
 // As palavras estão normalizadas (minúsculas, sem acentos). Palavras curtas levam espaços à volta
 // para não apanharem outras palavras. `seguintes`: "temas" mostra os temas iniciais; "tema" mostra o
@@ -79,14 +80,14 @@ Em que tema te posso ajudar?`,
     codigo: "S11",
     descricao: "O aluno pergunta se o Newton é uma pessoa ou uma IA",
     palavras: ["es uma pessoa", "es humano", "es real", "es um robo", "es uma ia", "es inteligencia artificial", "usas inteligencia artificial", "falo com uma pessoa"],
-    texto: `Não sou uma pessoa. Sou um assistente de estudo com respostas preparadas para ti. Por agora, ainda não uso inteligência artificial.`,
+    texto: `Não, sou uma IA que ajuda a estudar Físico-Química. Posso enganar-me, por isso confirma o que for importante no manual ou com o teu professor.`,
     seguintes: "temas",
   },
   {
     codigo: "S11",
     descricao: "O aluno trata o Newton como amigo ou confidente",
     palavras: ["es meu amigo", "es o meu amigo", "queres ser meu amigo", "gostas de mim", "amo-te", "amo te", "es o meu melhor amigo"],
-    texto: `Gosto de estudar contigo! Mas não sou uma pessoa: sou um assistente de estudo. Para conversas pessoais, os teus amigos e a tua família são muito melhores do que eu.`,
+    texto: `Gosto de estudar contigo! Mas não sou uma pessoa: sou uma IA. Para conversas pessoais, os teus amigos e a tua família são muito melhores do que eu.`,
     seguintes: "temas",
   },
   {
@@ -121,7 +122,7 @@ export const CONVERSA = [
   },
   {
     palavras: ["quem es", "o que es", "o que fazes", "como te chamas", "teu nome"],
-    texto: "Sou o **Newton**, um assistente para te ajudar a estudar Físico-Química do 7.º ao 9.º ano. As minhas respostas foram preparadas para ti, mas ainda não foram revistas por um professor: em caso de dúvida, confirma com o teu.",
+    texto: "Sou o **Newton**, uma IA que te ajuda a estudar Físico-Química do 7.º ao 9.º ano. Posso enganar-me: em caso de dúvida, confirma com o teu professor.",
   },
 ];
 

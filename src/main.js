@@ -1,4 +1,5 @@
-// Chat do Newton (sem IA): o aluno pergunta, o Newton responde com respostas pré-definidas.
+// Chat do Newton: o aluno pergunta e o Newton responde com IA (Fase 5), apoiado nos conteúdos preparados.
+// Os chips de temas e as situações sensíveis usam sempre as respostas preparadas; se a IA falhar, também.
 import "@material/web/button/filled-button.js";
 import "@material/web/button/filled-tonal-button.js";
 import "@material/web/button/outlined-button.js";
@@ -18,6 +19,7 @@ import "@fontsource/roboto/500.css";
 import { mostrarAviso } from "./aviso.js";
 import { abrirHistorico, pedirArmazenamentoPersistente } from "./dados/historico.js";
 import { desenharLista } from "./gaveta.js";
+import { pedirIA } from "./ia.js";
 import { icone, preencherIcones } from "./icones.js";
 import { responder, temaPorId, TEMAS_INICIAIS, TEMAS_POR_ANO } from "./respostas.js";
 import "./styles/tema-cores.css";
@@ -52,6 +54,10 @@ let ocupado = false;
 // ---------- Perfil: o ano do aluno (Fase 4) ----------
 
 let anoAluno = null;
+
+// Fica true quando o site não tem a função da IA (GitHub Pages, `npm run dev`): o resto da visita
+// usa só as respostas preparadas, sem tentar a IA em cada pergunta.
+let semIA = false;
 const temasIniciais = () => TEMAS_POR_ANO[anoAluno] ?? TEMAS_INICIAIS;
 
 // ---------- Histórico (guardado no navegador: Fase 3) ----------
@@ -225,9 +231,11 @@ async function perguntar(texto, idTema) {
   const resposta =
     idTema && temaPorId(idTema) ? { tipo: "tema", tema: temaPorId(idTema) } : responder(pergunta, temasIniciais());
 
-  // O que mostrar: a explicação de um tema, a pergunta "qual dos temas?" (G10) ou uma mensagem.
+  // A resposta preparada: a explicação de um tema, a pergunta "qual dos temas?" (G10) ou uma mensagem.
   let textoResposta = resposta.texto;
   let seguintes = resposta.seguintes ?? [];
+  let tipo = resposta.tipo;
+  let temaId = resposta.tipo === "tema" ? resposta.tema.id : null;
   if (resposta.tipo === "tema") {
     textoResposta = resposta.tema.explicacao;
     seguintes = resposta.tema.seguintes;
@@ -235,30 +243,71 @@ async function perguntar(texto, idTema) {
     seguintes = resposta.temas.map((t) => t.id);
   }
 
-  // Uma pequena pausa torna a conversa mais natural (sem IA, a resposta é imediata).
   const escrita = indicadorEscrita();
   adicionar(escrita);
-  await esperar(reduzirMovimento.matches ? 300 : 700 + Math.min(textoResposta.length, 900));
+  const inicio = Date.now();
+
+  // Perguntas escritas vão para a IA. Ficam de fora os chips de temas (já têm a explicação preparada)
+  // e as situações sensíveis (S1 a S12): a segurança não depende do modelo (PRD, decisão 29).
+  const situacaoSensivel = resposta.tipo === "mensagem" && resposta.situacao;
+  if (!idTema && !situacaoSensivel && !semIA) {
+    // O tema que serve de base de conhecimento: o da pergunta ou, numa pergunta de seguimento, o último da conversa
+    const temaBase =
+      resposta.tipo === "tema"
+        ? resposta.tema
+        : resposta.tipo === "ambigua"
+          ? resposta.temas[0]
+          : temaPorId(registoAtual.findLast((m) => m.autor === "newton" && m.temaId)?.temaId);
+    const ia = await pedirIA({
+      mensagens: registoAtual.slice(-10).map(({ autor, texto: t }) => ({ autor, texto: t })),
+      ano: anoAluno,
+      temaId: temaBase?.id ?? null,
+    });
+
+    if (ia.resposta) {
+      textoResposta = ia.resposta;
+      tipo = "ia";
+      temaId = temaBase?.id ?? null;
+      seguintes = temaBase?.seguintes ?? [];
+    } else {
+      // A IA falhou: o Newton diz o que se passa e mostra a resposta preparada (U16, U17)
+      if (ia.erro === "sem-funcao") semIA = true;
+      const aviso =
+        ia.erro === "limite"
+          ? "Por agora cheguei ao limite de perguntas à IA. Tenta outra vez daqui a um minuto."
+          : "Não consegui ligar-me à IA agora.";
+      const continuacao =
+        resposta.tipo === "tema" ? "Entretanto, aqui vai a explicação preparada:" : "Entretanto, estes temas têm explicações preparadas:";
+      if (resposta.tipo !== "ambigua") {
+        textoResposta = `${aviso} ${continuacao}\n\n${resposta.tipo === "tema" ? textoResposta : ""}`.trim();
+        if (resposta.tipo !== "tema") seguintes = temasIniciais();
+      }
+    }
+  }
+
+  // As respostas preparadas chegam logo; uma pequena pausa torna a conversa mais natural.
+  const pausa = tipo === "ia" ? 0 : reduzirMovimento.matches ? 300 : 700 + Math.min(textoResposta.length, 900);
+  await esperar(Math.max(0, pausa - (Date.now() - inicio)));
   escrita.remove();
 
   const registoNewton = {
     autor: "newton",
     texto: textoResposta,
-    tipo: resposta.tipo,
-    temaId: resposta.tipo === "tema" ? resposta.tema.id : null,
+    tipo,
+    temaId,
     seguintes,
     situacao: resposta.situacao ?? null,
   };
   if (vista === minhaVista) {
-    adicionar(respostaNewton(textoResposta, seguintes, resposta.tipo));
+    adicionar(respostaNewton(textoResposta, seguintes, tipo));
     registoAtual.push(registoNewton);
   }
 
   // Guardar a resposta tal como foi mostrada; o título da conversa passa a ser o tema da primeira resposta
   if (idConversa) {
     await guardar((h) => h.adicionarMensagem(idConversa, registoNewton));
-    if (primeiraPergunta && resposta.tipo === "tema") {
-      const renomeada = await guardar((h) => h.renomearConversa(idConversa, resposta.tema.titulo));
+    if (primeiraPergunta && temaId) {
+      const renomeada = await guardar((h) => h.renomearConversa(idConversa, temaPorId(temaId).titulo));
       if (renomeada && conversaAtual?.id === idConversa) conversaAtual = renomeada;
     }
     atualizarGaveta();

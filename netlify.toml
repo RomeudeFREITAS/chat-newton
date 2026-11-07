@@ -1,0 +1,12 @@
+# Publicação do Newton no Netlify (Fase 5).
+# Este ficheiro manda sobre o que estiver nas definições do site no Netlify.
+
+[build]
+  # O Newton usa Vite: o site publicado é o resultado da build, na pasta dist
+  command = "npm run build"
+  publish = "dist"
+  # A função que fala com a IA (a chave fica nas variáveis de ambiente do Netlify, nunca no código)
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "22"
