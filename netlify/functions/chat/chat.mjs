@@ -44,7 +44,7 @@ function origemPermitida(pedido, ambiente) {
 const json = (dados, estado = 200) => Response.json(dados, { status: estado });
 
 /** Trata um pedido da página. As opções servem para os testes (ambiente e fetch simulados). */
-export async function tratarPedido(pedido, { ambiente = process.env, fetch = globalThis.fetch } = {}) {
+export async function tratarPedido(pedido, { ambiente = process.env, fetch = globalThis.fetch, esperar } = {}) {
   if (pedido.method !== "POST") return json({ erro: "Usa POST." }, 405);
   if (!origemPermitida(pedido, ambiente)) return json({ erro: "Origem não permitida." }, 403);
 
@@ -67,7 +67,7 @@ export async function tratarPedido(pedido, { ambiente = process.env, fetch = glo
   }
 
   try {
-    const { texto, modelo } = await fornecedor({ instrucao: instrucaoDeSistema({ ano, tema }), mensagens, ambiente, fetch });
+    const { texto, modelo } = await fornecedor({ instrucao: instrucaoDeSistema({ ano, tema }), mensagens, ambiente, fetch, esperar });
     return json({ resposta: limparFormato(texto), modelo, temaId: tema?.id ?? null });
   } catch (erro) {
     const estado = erro instanceof ErroIA ? erro.estado : 502;
