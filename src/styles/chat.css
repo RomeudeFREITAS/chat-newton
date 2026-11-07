@@ -335,7 +335,7 @@ body {
 
 .compositor__nota {
   max-width: 720px;
-  margin: 0 auto 6px;
+  margin: 6px auto 0;
   padding-inline: 16px;
   text-align: center;
   color: var(--md-sys-color-on-surface-variant);
@@ -370,10 +370,16 @@ body {
   transition: transform var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate);
 }
 
-/* No telemóvel, o selo do Netlify fica no canto de baixo: o fim da gaveta ganha espaço para não ficar tapado */
+/* No telemóvel, o Netlify (plano gratuito) põe um selo fixo no canto de baixo, que não se pode tirar.
+   O fundo do ecrã fica reservado para ele: a caixa de escrita, o botão de enviar, a nota da IA
+   e o fim da gaveta ficam sempre por cima. */
 @media (max-width: 1199px) {
+  .compositor {
+    padding-bottom: max(68px, calc(env(safe-area-inset-bottom) + 60px));
+  }
+
   .gaveta {
-    padding-bottom: max(64px, env(safe-area-inset-bottom));
+    padding-bottom: max(68px, calc(env(safe-area-inset-bottom) + 60px));
   }
 }
 
